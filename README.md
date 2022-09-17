@@ -1,3 +1,24 @@
+# Bernardo's steps
+
+### Basic setup (Bernardo)
+```
+# 1) Instal Point Cloud Library (PCL):
+sudo apt install libpcl-dev
+
+# 2) Create conda env:
+# conda remove --name bjgbiesseck_3DFacePointCloudNet_py37 --all
+conda create --name bjgbiesseck_3DFacePointCloudNet_py37 python=3.7 && \
+conda activate bjgbiesseck_3DFacePointCloudNet_py37 && \
+
+# 3) Clone github repository:
+cd ~/GitHub && \
+git clone https://github.com/biesseck/3DFacePointCloudNet.git && \
+cd 3DFacePointCloudNet && \
+
+# 4) Download the BFM2017 h5 file `model2017-1_face12_nomouth.h5` (https://faces.dmi.unibas.ch/bfm/bfm2017.html)
+#    and move into `/Data`.
+```
+
 # Learning Directly from Synthetic Point Clouds for "In-the-wild" 3D Face Recognition
 
 Point clouds-based networks have achieved great attention in 3D object classification, segmentation, and indoor scene semantic parsing, but its application to 3D face recognition is still underdeveloped owing to two main reasons: lack of large-scale 3D facial data and absence of deep neural network that can directly extract discriminative face representations from point clouds. To address these two problems, a PointNet++ based network is proposed in this paper to extract face features directly from point clouds facial scans and a statistical 3D Morphable Model based 3D face synthesizing strategy is established to generate large-scale unreal facial scans to train the proposed network from scratch. A curvature-aware point sampling technique is proposed to hierarchically down-sample feature-sensitive points which are crucial to pass and aggregate discriminative facial features deeply. In addition, a novel 3D face transfer learning method is proposed to ease the domain discrepancy between synthetic and 'in-the-wild' faces.
