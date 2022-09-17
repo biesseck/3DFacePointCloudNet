@@ -1,12 +1,5 @@
-from __future__ import (
-    division,
-    absolute_import,
-    with_statement,
-    print_function,
-    unicode_literals,
-)
-import torch
 import numpy as np
+import torch
 
 
 def angle_axis(angle, axis):
@@ -57,7 +50,7 @@ class PointcloudRotate(object):
         self.axis = axis
 
     def __call__(self, points):
-        rotation_angle = np.random.uniform() * 2 * np.pi / 36
+        rotation_angle = np.random.uniform() * 2 * np.pi
         rotation_matrix = angle_axis(rotation_angle, self.axis)
 
         normals = points.size(1) > 3
@@ -65,9 +58,9 @@ class PointcloudRotate(object):
             return torch.matmul(points, rotation_matrix.t())
         else:
             pc_xyz = points[:, 0:3]
-            pc_normals = points[:, 3:6]
+            pc_normals = points[:, 3:]
             points[:, 0:3] = torch.matmul(pc_xyz, rotation_matrix.t())
-            points[:, 3:6] = torch.matmul(pc_normals, rotation_matrix.t())
+            points[:, 3:] = torch.matmul(pc_normals, rotation_matrix.t())
 
             return points
 

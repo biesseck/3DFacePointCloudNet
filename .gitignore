@@ -1,3 +1,9 @@
 
+*.so
+*.o
 *.pyc
+
 Data/*.h5
+
+build
+pointnet2_ops.egg-info
