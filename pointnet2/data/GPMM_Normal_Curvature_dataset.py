@@ -89,6 +89,9 @@ class GPMMNormalCurvDataset(data.Dataset):
 
     def _find_classes(self, dir, class_nums):
         if sys.version_info >= (3,5):
+            # BERNARDO
+            print('GPMM_Normal_Curvature_dataset.py: GPMMNormalCurvDataset: _find_classes(): dir=\''+str(dir)+'\'    class_nums=', class_nums)
+
             classes = [d.name for d in os.scandir(dir) if d.is_dir()]
         else:
             classes = [d for d in os.listdir(dir) if os.path.isdir(os.path.join(dir, d))]
