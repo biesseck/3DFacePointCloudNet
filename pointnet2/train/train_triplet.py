@@ -324,6 +324,12 @@ def get_list(folder):
 
 if __name__ == "__main__":
     args = parse_args()
+
+    # BERNARDO
+    log_folder = '/'.join(log_file.split('/')[:-1])
+    if not osp.exists(log_folder):
+        os.makedirs(log_folder)
+
     f = open(log_file, 'w')
     transforms = transforms.Compose(
         [
