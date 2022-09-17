@@ -9,6 +9,7 @@ sudo apt install libpcl-dev
 # conda remove --name bjgbiesseck_3DFacePointCloudNet_py37 --all
 conda create --name bjgbiesseck_3DFacePointCloudNet_py37 python=3.7 && \
 conda activate bjgbiesseck_3DFacePointCloudNet_py37 && \
+conda install pytorch -c pytorch && \
 
 # 3) Clone github repository:
 cd ~/GitHub && \
@@ -18,6 +19,12 @@ cd 3DFacePointCloudNet && \
 # 4) Download the BFM2017 h5 file `model2017-1_face12_nomouth.h5` (https://faces.dmi.unibas.ch/bfm/bfm2017.html)
 #    and move into `/Data`.
 ```
+
+### Secondary step (Bernardo)
+```
+
+```
+
 
 # Learning Directly from Synthetic Point Clouds for "In-the-wild" 3D Face Recognition
 
