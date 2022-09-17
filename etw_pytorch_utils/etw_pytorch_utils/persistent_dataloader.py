@@ -9,8 +9,9 @@ import re
 import sys
 import threading
 import traceback
-from torch._six import string_classes, int_classes
 
+# from torch._six import string_classes, int_classes   # original
+int_classes = int                                      # BERNARDO (based on 'https://discuss.pytorch.org/t/cannot-import-name-int-classes-from-torch-six/126611')
 
 if sys.version_info[0] == 2:
     import Queue as queue
