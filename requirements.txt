@@ -5,6 +5,11 @@ h5py
 matplotlib
 sklearn
 torchviz
+visdom
+scipy
+tqdm
+future
+statistics
 
 hydra-core==0.11.3
 pytorch-lightning==0.7.1
