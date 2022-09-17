@@ -11,3 +11,5 @@ pointnet2_ops.egg-info/
 pointnet2.egg-info/
 pointnet2/log/
 log/
+
+.idea/
