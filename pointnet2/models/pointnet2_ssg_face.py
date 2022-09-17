@@ -8,7 +8,8 @@ from __future__ import (
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import etw_pytorch_utils as pt_utils
+# import etw_pytorch_utils as pt_utils                   # original
+import etw_pytorch_utils.etw_pytorch_utils as pt_utils   # BERNARDO
 from collections import namedtuple
 #import sys
 #sys.path.append('/home/zzy/file/experiment/PointNet/Pointnet2_PyTorch-master_knn')
