@@ -5,5 +5,7 @@
 
 Data/*.h5
 
-build
-pointnet2_ops.egg-info
+build/
+dist/
+pointnet2_ops.egg-info/
+pointnet2.egg-info/
