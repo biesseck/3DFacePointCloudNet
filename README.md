@@ -2,7 +2,7 @@
 
 ### Basic setup (Bernardo)
 ```
-# 1) Instal Point Cloud Library (PCL):
+# 1) Install the Point Cloud Library (PCL):
 sudo apt install libpcl-dev
 
 # 2) Create conda env:
