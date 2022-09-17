@@ -24,10 +24,17 @@ pip install -e .
 #    and move into `/Data`.
 ```
 
-### Secondary step (Bernardo)
-```
 
+### Example training (Bernardo)
+Training examples are provided by `pointnet2/train/train_cls.py` and `pointnet2/train/train_triplet.py`. `train_cls` is used to pre-train on generated data and `train_triplet` is used to fine tune on real faces to get better results.  
 ```
+python -m pointnet2.train.train_cls
+python -m pointnet2.train.train_triplet -model_checkpoint=checkpoints/model.pth.tar --margin=0.3 --num_triplet=30000
+```
+the `checkpoints/model.pth.tar` is `train_cls` result.
+
+___
+
 
 
 # Learning Directly from Synthetic Point Clouds for "In-the-wild" 3D Face Recognition
