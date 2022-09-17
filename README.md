@@ -9,7 +9,7 @@ sudo apt install libpcl-dev
 # conda remove --name bjgbiesseck_3DFacePointCloudNet_py37 --all
 conda create --name bjgbiesseck_3DFacePointCloudNet_py37 python=3.7 && \
 conda activate bjgbiesseck_3DFacePointCloudNet_py37 && \
-conda install pytorch -c pytorch && \
+conda install pytorch torchvision -c pytorch && \
 
 # 3) Clone github repository:
 cd ~/GitHub && \
