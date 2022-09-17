@@ -1,8 +1,3 @@
-# ADDED FROM erikwijmans/Pointnet2_PyTorch
-from .Indoor3DSemSegLoader import Indoor3DSemSeg
-from .ModelNet40Loader import ModelNet40Cls
-
-
 # ORIGINAL (alfredtorres/3DFacePointCloudNet)
 from __future__ import (
     division,
@@ -14,3 +9,8 @@ from __future__ import (
 from .GPMM_Normal_Curvature_dataset import GPMMNormalCurvDataset
 from .TripletFaceDataset import TripletFaceDataset
 
+
+
+# ADDED FROM erikwijmans/Pointnet2_PyTorch
+from .Indoor3DSemSegLoader import Indoor3DSemSeg
+from .ModelNet40Loader import ModelNet40Cls
