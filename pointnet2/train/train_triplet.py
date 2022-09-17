@@ -218,9 +218,18 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch):
                    data_time=data_time, loss=losses))           
 
 def loadBCNFile(path):
+    t = os.path.getsize(path)   # BERNARDO
     n = os.path.getsize(path) // 4
+
+    # BERNARDO
+    print('train_triplet.py: loadBCNFile(): path=', path, '   t=', t, '   n=', n)
+
     with open(path, 'rb') as f:
         data_raw = struct.unpack('f' * n, f.read(n * 4))
+
+        # BERNARDO
+        print('len(data_raw)=', len(data_raw))
+
     data = np.asarray(data_raw, dtype=np.float32).reshape((4 + 3), n // (4 + 3))
     point_set = data.T
     # normlize
