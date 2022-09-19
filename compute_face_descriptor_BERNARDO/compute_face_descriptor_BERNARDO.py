@@ -43,30 +43,21 @@ def get_pointcloud_with_normals(cloud):
     return cloud_with_normals
 
 
-def main(args):
-    print('compute_face_descriptor_BERNARDO.py: main(): Loading face cloud', args.cloud_path, '...')
-    cloud = pcl.load(args.cloud_path)
-    # print('cloud.to_array()[0:10]:', cloud.to_array()[0:10])
-    print('compute_face_descriptor_BERNARDO.py: main(): Computing face cloud normals...')
-    # normals = get_normals(cloud)
-    pointcloud_with_normals = get_pointcloud_with_normals(cloud)
-    data_raw = pointcloud_with_normals
-
-    print('compute_face_descriptor_BERNARDO.py: main(): Pre-processing normals...')
-    # n = data_raw.shape[0]
-    # data = np.asarray(data_raw, dtype=np.float32).reshape((4 + 3), n // (4 + 3))
-    data = data_raw
-    # point_set = data.T
-    point_set = data
+# BERNARDO
+def preprocess_pointcloud_with_normals(pc_with_normals):
+    point_set = pc_with_normals
     # normlize
     point_set[:, 0:3] = (point_set[:, 0:3]) / 100
     point_set = torch.from_numpy(point_set)
     point_set[:, 6] = torch.pow(point_set[:, 6], 0.1)
 
+    input = point_set
+    input = input.unsqueeze(0).contiguous()
+    input = input.to("cuda", non_blocking=True)
+    return input
 
 
-    # BASED ON FUNCTION train_triplet.py: validate()
-    print('compute_face_descriptor_BERNARDO.py: main(): Making Pointnet model descriptor...')
+def build_Pointnet_model(args):
     model = Pointnet(input_channels=3, use_xyz=True)
     model.cuda()
     # 512 is dimension of feature
@@ -82,7 +73,6 @@ def main(args):
         lr=lr, weight_decay=args.weight_decay
     )
 
-
     print('compute_face_descriptor_BERNARDO.py: main(): Loading trained model...')
     if args.model_checkpoint is not None:
         checkpoint_status = pt_utils.load_checkpoint(
@@ -91,19 +81,34 @@ def main(args):
         if checkpoint_status is not None:
             it, start_epoch, best_loss = checkpoint_status
 
-
-    print('compute_face_descriptor_BERNARDO.py: main(): Computing 3D face descriptor...')
     model.eval()
     optimizer.zero_grad()
+    return model
 
-    # g_feature = torch.zeros((len(gfile_list), 1, 512))  # original
-    # p_feature = torch.zeros((len(pfile_list), 1, 512))  # original
-    # g_feature = torch.zeros((1, 1, 512))                  # BERNARDO
-    p_feature = torch.zeros((1, 1, 512))                  # BERNARDO
 
-    input = point_set   # BERNARDO
-    input = input.unsqueeze(0).contiguous()
-    input = input.to("cuda", non_blocking=True)
+
+def main(args):
+    print('compute_face_descriptor_BERNARDO.py: main(): Loading face cloud', args.cloud_path, '...')
+    cloud = pcl.load(args.cloud_path)
+    # print('cloud.to_array()[0:10]:', cloud.to_array()[0:10])
+    print('compute_face_descriptor_BERNARDO.py: main(): Computing face cloud normals...')
+    # normals = get_normals(cloud)
+    pointcloud_with_normals = get_pointcloud_with_normals(cloud)
+    # data_raw = pointcloud_with_normals
+
+    print('compute_face_descriptor_BERNARDO.py: main(): Pre-processing normals...')
+    input = preprocess_pointcloud_with_normals(pointcloud_with_normals)
+
+
+    # BASED ON FUNCTION train_triplet.py: validate()
+    print('compute_face_descriptor_BERNARDO.py: main(): Making Pointnet model descriptor...')
+    model = build_Pointnet_model(args)
+
+
+
+    print('compute_face_descriptor_BERNARDO.py: main(): Computing 3D face descriptor...')
+    p_feature = torch.zeros((1, 1, 512))  # BERNARDO
+
     # feat = model(input)  # 1x512
     feat = model.forward(input)  # 1x512
     print('feat[:,0:100] - total is 512:\n', feat[:,0:100])
