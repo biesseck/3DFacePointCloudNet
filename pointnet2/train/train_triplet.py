@@ -83,6 +83,11 @@ def parse_args():
     parser.add_argument('--classifier_type', type=str, default='AL',
                     help='Which classifier for train. (MCP, AL, L)')
 
+    # BERNARDO
+    parser.add_argument(
+        "-cloud_path", type=str, default='', help="Path of point cloud (OBJ or PLY format)"
+    )
+
     return parser.parse_args()
 
 lr = 1e-3
