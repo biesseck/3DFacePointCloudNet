@@ -87,6 +87,10 @@ def parse_args():
     parser.add_argument(
         "-cloud_path", type=str, default='', help="Path of point cloud (OBJ or PLY format)"
     )
+    parser.add_argument(
+        "-dataset_path", type=str, default='',
+        help="Path of dataset root folder containing 3D face reconstructions (OBJ or PLY format)"
+    )
 
     return parser.parse_args()
 
