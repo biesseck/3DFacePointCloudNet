@@ -14,7 +14,8 @@ import sys
 try:
     import builtins
 except:
-    import __builtin__ as builtins
+    # import __builtin__ as builtins  # original
+    import builtins as builtins       # BERNARDO
 
 try:
     import pointnet2_ops._ext as _ext # BERNARDO
@@ -274,7 +275,8 @@ class BallQuery(Function):
         torch.Tensor
             (B, npoint, nsample) tensor with the indicies of the features that form the query balls
         """
-        output = _ext.ball_query(new_xyz, xyz, fps_idx, radius, nsample)
+        # output = _ext.ball_query(new_xyz, xyz, fps_idx, radius, nsample)  # original
+        output = _ext.ball_query(new_xyz, xyz, radius, nsample)             # BERNARDO
         ctx.mark_non_differentiable(output)
         return output
 
