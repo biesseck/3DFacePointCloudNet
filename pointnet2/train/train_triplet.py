@@ -11,7 +11,8 @@ import torch.nn as nn
 from torch.autograd import Variable,Function
 from torch.utils.data import DataLoader
 from torchvision import transforms
-import etw_pytorch_utils as pt_utils
+# import etw_pytorch_utils as pt_utils                   # original
+import etw_pytorch_utils.etw_pytorch_utils as pt_utils   # BERNARDO
 import os.path as osp
 import os
 import argparse
