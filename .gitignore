@@ -13,4 +13,6 @@ pointnet2.egg-info/
 pointnet2/log/
 log/
 
+*/python_pcl.egg-info/*
+
 .idea/
