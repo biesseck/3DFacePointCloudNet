@@ -25,7 +25,7 @@ if __name__ == '__main__':
     # sys.argv += ['-cls_checkpoint', 'checkpoints/20191028_1000cls_model_best.pth.tar']
 
     sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw']
-        
+
 
     args = parse_args()
     # print('__main__(): args=', args)
