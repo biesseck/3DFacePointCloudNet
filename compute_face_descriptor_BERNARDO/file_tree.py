@@ -19,19 +19,24 @@ class Tree:
             folders.append(folder)
         return folders
 
+    def get_sub_folders_one_level(self, dir_path: str):
+        # sub_folders = [f.path for f in os.scandir(dir_path) if f.is_dir()]
+        sub_folders = [f.name for f in os.scandir(dir_path) if f.is_dir()]
+        return sub_folders
 
-class FileTreeLfwDatasets(Tree):
-    def _get_files_from_dirs_list(self, dataset_path, subdirs_list: [], exts=('jpg', 'png')):
+
+class FileTreeLfwDatasets3dReconstructed(Tree):
+    def _get_sample_names_per_subject(self, dataset_path, subdirs_list: []):
         # dataset_path = dataset_path.replace('//', '/')
-        subjects_files_paths = []
-        for subdir in subdirs_list:
+        subjects_sample_paths = [[]] * len(subdirs_list)
+        # for subdir in subdirs_list:
+        for i, subdir in enumerate(subdirs_list):
             subject_path = os.path.join(dataset_path, subdir)
-            for ext in exts:
-                subjects_files_paths += glob.glob(subject_path + '/*.' + ext)
-        subjects_files_names = [''] * len(subjects_files_paths)
-        for i in range(len(subjects_files_paths)):
-            subjects_files_names[i] = subjects_files_paths[i].split('/')[-1]
-        return subjects_files_names
+            # print('FileTreeLfwDatasets: _get_sample_names_from_dirs_list(): subject_path=', subject_path)
+            # subjects_sample_paths[i] = glob.glob(subject_path + '/*')
+            subjects_sample_paths[i] = self.get_sub_folders_one_level(subject_path)
+            # print('    FileTreeLfwDatasets: _get_sample_names_from_dirs_list(): subjects_sample_paths['+str(i)+']=', subjects_sample_paths[i])
+        return subjects_sample_paths
 
     def __get_subjects_names_from_paths(self, sub_folders: []):
         subjects_names = [''] * len(sub_folders)
@@ -40,62 +45,67 @@ class FileTreeLfwDatasets(Tree):
             subjects_names[i] = sub_folder.split('/')[-1]
         return subjects_names
 
-    def get_common_images_names(self, dataset_location: str, datasets_names: [], exts: [], image_type: str):
+    def get_common_subjects_names(self, dataset_location: str, datasets_names: [], image_type: str):
         subjects_names = {}
         for dataset_name in datasets_names:
             if dataset_name.upper() == 'LFW':
-                sub_folders_lfw = self.get_all_sub_folders(dataset_location + '/' + dataset_name)
-                subjects_names[dataset_name] = self.__get_subjects_names_from_paths(sub_folders_lfw)
-            if dataset_name.upper() == 'TALFW':
-                sub_folders_talfw = self.get_all_sub_folders(dataset_location + '/' + dataset_name)
-                subjects_names[dataset_name] = self.__get_subjects_names_from_paths(sub_folders_talfw)
-
+                subjects_names[dataset_name] = self.get_sub_folders_one_level(dataset_location + '/' + dataset_name)
+            elif dataset_name.upper() == 'TALFW':
+                subjects_names[dataset_name] = self.get_sub_folders_one_level(dataset_location + '/' + dataset_name)
+            # TODO
+            elif dataset_name.upper() == 'calfw':
+                pass
+            # TODO
+            elif dataset_name.upper() == 'MLFW':
+                pass
         common_subjects = sorted(set(subjects_names[datasets_names[0]]).intersection(subjects_names[datasets_names[1]]))
+        return common_subjects
 
-        files_names = {}
+    def get_common_samples_names(self, dataset_location: str, datasets_names: [], common_subjects: [], image_type: str):
+        # print('datasets_names:', datasets_names)
+        samples_lists_names = {}
         for dataset_name in datasets_names:
-            files_names[dataset_name] = self._get_files_from_dirs_list(
-                                                                dataset_path=dataset_location + '/' + dataset_name,
-                                                                subdirs_list=common_subjects,
-                                                                exts=exts)
+            samples_lists_names[dataset_name] = self._get_sample_names_per_subject(
+                                                                    dataset_path=dataset_location + '/' + dataset_name,
+                                                                    subdirs_list=common_subjects)
+            # for subject, samples_list_name in zip(common_subjects, samples_lists_names[dataset_name]):
+            #     print(subject, ':', samples_list_name)
 
-        common_file_names = sorted(set(files_names[datasets_names[0]]).intersection(files_names[datasets_names[1]]))
-        return common_subjects, common_file_names
+        # KEEP ONLY COMMON SAMPLES
+        common_samples = [[]] * len(common_subjects)
+        for i in range(len(samples_lists_names[datasets_names[0]])):
+            common_samples[i] = sorted(set(samples_lists_names[datasets_names[0]][i]).intersection(samples_lists_names[datasets_names[1]][i]))
+            # print('i:', i, '-', samples_lists_names[datasets_names[0]][i], ':', samples_lists_names[datasets_names[1]][i])
+            # print('    common_samples[i]:', common_samples[i])
+        return samples_lists_names, common_samples
 
-    def get_common_images_names_without_ext(self, dataset_location: str, datasets_names: [], exts: [], image_type: str):
-        common_subjects, common_file_names = self.get_common_images_names(dataset_location, datasets_names, exts, image_type)
-        for i in range(len(common_file_names)):
-            for ext in exts:
-                common_file_names[i] = common_file_names[i].replace('.'+ext, '')
-        return common_subjects, common_file_names
-
-
-class FileTreeLfwDatasets3dReconstructed(FileTreeLfwDatasets):
-
-    def get_3d_faces_file_names(self, dataset_location: str, dataset_name: str, subject_names: [], sub_folder_file_names: []):
-        reconstruct_faces_file_names = [''] * len(sub_folder_file_names)
-        reconstruct_render_file_names = [''] * len(sub_folder_file_names)
-        for i in range(len(sub_folder_file_names)):
-            sub_folder_file_name = sub_folder_file_names[i]
-            subject_name = '_'.join(sub_folder_file_name.split('_')[0:-1])
-            path_reconstruct_face = os.path.join(dataset_location, dataset_name, subject_name, sub_folder_file_name)
-            reconstruct_faces_file_names[i] = os.path.join(path_reconstruct_face, 'mesh.obj')
-            reconstruct_render_file_names[i] = os.path.join(path_reconstruct_face, 'render.jpg')
-        return reconstruct_faces_file_names, reconstruct_render_file_names
+    def get_common_subjects_and_samples_names(self, dataset_location: str, datasets_names: [], image_type: str):
+        common_subjects = self.get_common_subjects_names(dataset_location, datasets_names, image_type)
+        samples_lists_names, common_samples_names = self.get_common_samples_names(dataset_location, datasets_names, common_subjects, image_type)
+        return common_subjects, samples_lists_names, common_samples_names
 
 
-'''
+
 if __name__ == '__main__':
 
-    input_path = '/mnt/42C8A18221CA5B0F/Local/datasets/imagensRGB/'
-    # input_path = '/home/bjgbiesseck/datasets/rgb_images'
+    input_path = '/home/bjgbiesseck/GitHub/MICA/demo/output'
 
     dataset_names = ['lfw', 'TALFW']
     # dataset_names = ['calfw', 'MLFW']
 
-    exts = ['jpg', 'png']
+    # exts = ['_OBJ.pt', '_PLY.pt']
+    exts = ['_OBJ.pt']
+    # exts = ['_PLY.pt']
 
-    common_file_names = FileTreeLfwDatasets().get_common_images_names_without_ext(input_path,
-                                                                                  dataset_names, exts, 'original')
-    pass
-'''
+    common_subjects, samples_lists_names, common_samples_names = FileTreeLfwDatasets3dReconstructed().get_common_subjects_and_samples_names(input_path, dataset_names, 'original')
+    # print('len(common_subjects):', len(common_subjects))
+    # print('len(common_samples_names):', len(common_samples_names))
+
+    for i, common_subject in enumerate(common_subjects):
+        common_sample_names = common_samples_names[i]
+        print('common_subject:', common_subject, '   common_sample_names:', common_sample_names)
+    print('len(common_subjects):', len(common_subjects))
+
+    # for common_file_name in common_file_names:
+    #     print('common_file_name:', common_file_name)
+    # print('len(common_file_names):', len(common_file_names))
