@@ -90,7 +90,7 @@ def build_Pointnet_model(args):
 def main(args):
     print('compute_face_descriptor_BERNARDO.py: main(): Loading face cloud', args.cloud_path, '...')
     cloud = pcl.load(args.cloud_path)
-    # print('cloud.to_array()[0:10]:', cloud.to_array()[0:10])
+    print('cloud.to_array()[0:3]:', cloud.to_array()[0:3])
     print('compute_face_descriptor_BERNARDO.py: main(): Computing face cloud normals...')
     # normals = get_normals(cloud)
     pointcloud_with_normals = get_pointcloud_with_normals(cloud)
@@ -111,7 +111,7 @@ def main(args):
 
     # feat = model(input)  # 1x512
     feat = model.forward(input)  # 1x512
-    print('feat[:,0:100] - total is 512:\n', feat[:,0:100])
+    print('feat[:,0:3] - total is 512:\n', feat[:,0:21])
     p_feature[:, :, :] = feat.cpu()  # 1x1x512
     # print('p_feature:', p_feature[:, :, 0:100])
     p_feature_norm = torch.norm(p_feature, p=2, dim=2)
@@ -127,8 +127,10 @@ if __name__ == '__main__':
 
     sys.argv += ['-model_checkpoint', 'checkpoints/20191028_1000cls_model_best.pth.tar']
     # sys.argv += ['-cls_checkpoint', 'checkpoints/20191028_1000cls_model_best.pth.tar']
-
-    sys.argv += ['-cloud_path', '/home/bjgbiesseck/GitHub/MICA/demo/output_TESTE/carell/mesh.obj']
+    
+    sys.argv += ['-cloud_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj']
+    # sys.argv += ['-cloud_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply']
+    # sys.argv += ['-cloud_path', '/home/bjgbiesseck/GitHub/MICA/demo/output_TESTE/carell/mesh.obj']
     # sys.argv += ['-cloud_path', '/home/bjgbiesseck/GitHub/MICA/demo/output_TESTE/carell/mesh.ply']
     # sys.argv += ['-cloud_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Abba_Eban/Abba_Eban_0001/mesh.obj']
     # sys.argv += ['-cloud_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Abba_Eban/Abba_Eban_0001/mesh.ply']
