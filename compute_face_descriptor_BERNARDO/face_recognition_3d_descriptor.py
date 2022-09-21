@@ -107,7 +107,7 @@ def load_3D_descriptors_from_disk(dataset_path: str, dataset_name: str, sujects_
             # print('path_descriptor:', path_descriptor)
             path_found_descriptor = glob.glob(path_descriptor_to_find)[0]
             # print('path_descriptor:', path_descriptor)
-            print('Loading 3D face descriptor:', path_found_descriptor, '...   sujects_names[j]:', sujects_names[j])
+            # print('Loading 3D face descriptor:', path_found_descriptor, '...   sujects_names[j]:', sujects_names[j])
             one_3D_descriptor = torch.load(path_found_descriptor)
             # print('loaded!   shape:', one_3D_descriptor.shape)
             # input('Paused... press ENTER')
@@ -146,11 +146,54 @@ def load_3D_descriptors_with_labels(args):
 
 # TODO
 def do_face_verification_one_dataset(descriptors_3D, labels_gt):
-    pass
+    descriptors_3D = descriptors_3D.unsqueeze(0)
+    tp, fp = 0, 0
+
+    # # TESTE
+    # n = 20
+    # descriptors_3D = descriptors_3D[:, 0:n, :]  # TESTE BERNARDO
+    # labels_gt = labels_gt[0:n]            # TESTE BERNARDO
+    # print('descriptors_3D.shape:', descriptors_3D.shape, '    len(labels_gt):', len(labels_gt))
+    # print('descriptors_3D[:,0,:].shape:', descriptors_3D[:,0,:].shape)
+    # for i in range(len(labels_gt)):
+    #     print('labels_gt[i]:', labels_gt[i])
+    # print('-------------------------------------')
+    # # TESTE
+
+    norms_descriptors_3D = torch.norm(descriptors_3D, p=2, dim=2)
+    # print('norms_descriptors_3D:', norms_descriptors_3D)
+
+    # # TESTE
+    # i = 0
+    # dis = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D.transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D.transpose(1, 0)
+    # print('dis:', dis, '    dis.min:', dis.min())
+    # # TESTE
+
+    for i in range(descriptors_3D.shape[1]):   # total num samples
+        dis = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D.transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D.transpose(1, 0)
+        # top1 = np.equal(torch.argmax(dis, dim=0).numpy(), np.argmax(Label, axis=0)).sum() / len(pfile_list)
+        dis[i] = 0      # ignores itself
+
+        # print('dis.transpose(1, 0):', dis.transpose(1, 0))
+        # # print()
+        # print('torch.argmax(dis, dim=0):', torch.argmax(dis, dim=0)[0])
+        # # input('Paused...')
+
+        gt_index = i
+        pr_index = torch.argmax(dis, dim=0)[0]
+        # print('labels_gt['+str(gt_index)+']:', labels_gt[gt_index], '   labels_gt['+str(pr_index)+']:', labels_gt[pr_index], '   dist:', dis[pr_index].detach().numpy())
+
+        if labels_gt[pr_index] == labels_gt[gt_index]:
+            tp += 1
+        else:
+            fp += 1
+
+    print('tp:', tp, '    fp:', fp)
 
 
 def main_verification(args):
     # LOAD DATASETS (LFW and TALFW)
+    print('Loading datasets (3D face descriptor)...')
     datasets = load_3D_descriptors_with_labels(args)
 
     if len(args.datasets_names) < 2:
@@ -158,7 +201,9 @@ def main_verification(args):
         dataset_samples_names_per_subject = datasets[(args.datasets_names[0], 'samples_names')]
         dataset_descriptors_3D = datasets[(args.datasets_names[0], 'descriptors_3D')]
         dataset_labels_gt = datasets[(args.datasets_names[0], 'labels_gt')]
+        print('    sujects:', len(dataset_sujects), '   samples:', len(dataset_labels_gt))
 
+        print('Doing face verification...')
         results = do_face_verification_one_dataset(dataset_descriptors_3D, dataset_labels_gt)
 
     else:
