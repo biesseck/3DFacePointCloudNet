@@ -2,9 +2,11 @@ import sys
 import numpy as np
 import argparse
 import os
+import glob
 
 # from pointnet2.train.train_triplet import *
 import pcl
+import torch
 
 from file_tree import *
 
@@ -91,40 +93,77 @@ def filter_dataset_subjects_and_samples(sujects_names: [], samples_per_subjects:
         remove_subjects_by_min_samples(value, sujects_names, samples_per_subjects)
 
 
+def load_3D_descriptors_from_disk(dataset_path: str, dataset_name: str, sujects_names: [], samples_per_subject: [], desc_file_ext: str):
+    total_samples_dataset = sum([len(samples) for samples in samples_per_subject])
+    # print('total_samples_dataset:', total_samples_dataset)
+    # descriptors_3D = np.zeros((total_samples_dataset, 512), dtype=float)
+    descriptors_3D = torch.zeros((total_samples_dataset, 512), dtype=float)
+    labels_gt = [''] * total_samples_dataset
+
+    i = 0
+    for j in range(len(sujects_names)):
+        for k in range(len(samples_per_subject[j])):
+            path_descriptor_to_find = os.path.join(dataset_path, dataset_name, sujects_names[j], samples_per_subject[j][k], desc_file_ext)
+            # print('path_descriptor:', path_descriptor)
+            path_found_descriptor = glob.glob(path_descriptor_to_find)[0]
+            # print('path_descriptor:', path_descriptor)
+            print('Loading 3D face descriptor:', path_found_descriptor, '...   sujects_names[j]:', sujects_names[j])
+            one_3D_descriptor = torch.load(path_found_descriptor)
+            # print('loaded!   shape:', one_3D_descriptor.shape)
+            # input('Paused... press ENTER')
+            descriptors_3D[i] = one_3D_descriptor
+            labels_gt[i] = sujects_names[j]
+            i += 1
+    return descriptors_3D, labels_gt
+
+
 def load_3D_descriptors_with_labels(args):
 
-    dataset = {}
+    datasets = {}
     for dataset_name in args.datasets_names:
-        dataset_sujects, dataset_samples_per_subject \
+        dataset_sujects, dataset_samples_names_per_subject \
             = FileTreeLfwDatasets3dReconstructed().get_subjects_and_samples_names(args.datasets_path, dataset_name, 'original')
-        # for subject, samples_list_name in zip(dataset_sujects, dataset_samples_per_subject):
+        # for subject, samples_list_name in zip(dataset_sujects, dataset_samples_names_per_subject):
         #     print(dataset_name, ':', subject, ':', samples_list_name)
         # input('Paused... press ENTER')
-        # print(dataset_name, '  len(dataset_sujects) before:', len(dataset_sujects), '  len(dataset_samples_per_subject) before:', len(dataset_samples_per_subject))
+        # print(dataset_name, '  len(dataset_sujects) before:', len(dataset_sujects), '  len(dataset_samples_names_per_subject) before:', len(dataset_samples_names_per_subject))
 
-        filter_dataset_subjects_and_samples(dataset_sujects, dataset_samples_per_subject, criterias=['min_samples', 2])
-        # for subject, samples_list_name in zip(dataset_sujects, dataset_samples_per_subject):
+        filter_dataset_subjects_and_samples(dataset_sujects, dataset_samples_names_per_subject, criterias=['min_samples', 2])
+        # for subject, samples_list_name in zip(dataset_sujects, dataset_samples_names_per_subject):
         #     print(dataset_name, ':', subject, ':', samples_list_name)
         # input('Paused... press ENTER')
-        # print(dataset_name, '  len(dataset_sujects) after:', len(dataset_sujects), '  len(dataset_samples_per_subject) after:', len(dataset_samples_per_subject))
-        
-        # dataset[dataset_name] =
+        # print(dataset_name, '  len(dataset_sujects) after:', len(dataset_sujects), '  len(dataset_samples_names_per_subject) after:', len(dataset_samples_names_per_subject))
 
+        dataset_descriptors_3D, dataset_labels_gt = \
+            load_3D_descriptors_from_disk(args.datasets_path, dataset_name, dataset_sujects, dataset_samples_names_per_subject, args.desc_file_ext)
 
-
-    # TODO: LOAD 3D DESCRIPTORS FROM DISK
-
-    # TODO: ORGANIZE LOADED DESCRIPTORS
+        datasets[(dataset_name, 'sujects')] = dataset_sujects
+        datasets[(dataset_name, 'samples_names')] = dataset_samples_names_per_subject
+        datasets[(dataset_name, 'descriptors_3D')] = dataset_descriptors_3D
+        datasets[(dataset_name, 'labels_gt')] = dataset_labels_gt
+    return datasets
 
 
 # TODO
-def do_face_verification():
+def do_face_verification_one_dataset(descriptors_3D, labels_gt):
     pass
 
 
 def main_verification(args):
     # LOAD DATASETS (LFW and TALFW)
-    descriptors_3D, labels_gt = load_3D_descriptors_with_labels(args)
+    datasets = load_3D_descriptors_with_labels(args)
+
+    if len(args.datasets_names) < 2:
+        dataset_sujects = datasets[(args.datasets_names[0], 'sujects')]
+        dataset_samples_names_per_subject = datasets[(args.datasets_names[0], 'samples_names')]
+        dataset_descriptors_3D = datasets[(args.datasets_names[0], 'descriptors_3D')]
+        dataset_labels_gt = datasets[(args.datasets_names[0], 'labels_gt')]
+
+        results = do_face_verification_one_dataset(dataset_descriptors_3D, dataset_labels_gt)
+
+    else:
+        raise Exception('Face verification for multiple datasets not implemented yet!')
+
 
     # LOAD POINT CLOUD DESCRIPTORS
 
@@ -132,9 +171,11 @@ def main_verification(args):
 
     pass
 
+
 def main_teste():
     for i in range(10-1, -1, -1):
         print('main_teste: i=', i)
+
 
 if __name__ == '__main__':
     # sys.argv += ['-epochs', '100']
@@ -145,9 +186,11 @@ if __name__ == '__main__':
 
     sys.argv += ['-datasets_path', '/home/bjgbiesseck/GitHub/MICA/demo/output']
 
-    sys.argv += ['-datasets_names', ['lfw', 'TALFW']]
+    sys.argv += ['-datasets_names', ['lfw']]
+    # sys.argv += ['-datasets_names', ['lfw', 'TALFW']]
 
-    sys.argv += ['-desc_file_ext', '_OBJ.pt']
+    sys.argv += ['-desc_file_ext', '*from_OBJ.pt']
+    # sys.argv += ['-desc_file_ext', '*from_PLY.pt']
 
 
     args = parse_args()
