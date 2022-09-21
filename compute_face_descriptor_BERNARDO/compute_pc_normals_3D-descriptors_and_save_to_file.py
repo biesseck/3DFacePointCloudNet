@@ -177,17 +177,17 @@ def load_pc_and_compute_normals(model, folder):
         p_feature_from_PLY[:, :, :] = feat_from_PLY.cpu()  # 1x1x512
         p_feature_norm_from_OBJ = torch.norm(p_feature_from_OBJ, p=2, dim=2)
         p_feature_norm_from_PLY = torch.norm(p_feature_from_PLY, p=2, dim=2)
-        path_p_feature_norm_from_OBJ = image_path_OBJ.replace(name+'.obj', '3D_face_descriptor_from_OBJ.pt')
-        path_p_feature_norm_from_PLY = image_path_PLY.replace(name+'.ply', '3D_face_descriptor_from_PLY.pt')
-        print('Saving 3D face descriptor:', path_p_feature_norm_from_OBJ, end=' ... ')
-        torch.save(p_feature_norm_from_OBJ, path_p_feature_norm_from_OBJ)
-        torch.save(p_feature_norm_from_PLY, path_p_feature_norm_from_PLY)
+        path_feat_norm_from_OBJ = image_path_OBJ.replace(name+'.obj', '3D_face_descriptor_from_OBJ.pt')
+        path_feat_norm_from_PLY = image_path_PLY.replace(name+'.ply', '3D_face_descriptor_from_PLY.pt')
+        print('Saving 3D face descriptor:', path_feat_norm_from_OBJ, end=' ... ')
+        torch.save(feat_from_OBJ, path_feat_norm_from_OBJ)
+        torch.save(feat_from_PLY, path_feat_norm_from_PLY)
         print('Saved!')
 
-        # loaded_pc_with_normals_from_OBJ = torch.load(path_pc_with_normals_from_OBJ)
-        # loaded_pc_with_normals_from_PLY = torch.load(path_pc_with_normals_from_PLY)
-        # print('pc_with_normals_from_OBJ[0:10]:', pc_with_normals_from_OBJ[0:10])
-        # print('loaded_pc_with_normals_from_OBJ[0:10]:', loaded_pc_with_normals_from_OBJ[0:10])
+        # loaded_feat_from_OBJ = torch.load(path_feat_norm_from_OBJ)
+        # loaded_feat_from_PLY = torch.load(path_feat_norm_from_PLY)
+        # print(loaded_feat_from_OBJ.shape, 'loaded_feat_from_OBJ[:,0:10]:', loaded_feat_from_OBJ[:,0:10])
+        # print(loaded_feat_from_PLY.shape, 'loaded_feat_from_PLY[:,0:10]:', loaded_feat_from_PLY[:,0:10])
 
 
 
