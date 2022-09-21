@@ -22,7 +22,7 @@ class Tree:
     def get_sub_folders_one_level(self, dir_path: str):
         # sub_folders = [f.path for f in os.scandir(dir_path) if f.is_dir()]
         sub_folders = [f.name for f in os.scandir(dir_path) if f.is_dir()]
-        return sub_folders
+        return sorted(sub_folders)
 
 
 class FileTreeLfwDatasets3dReconstructed(Tree):
@@ -84,8 +84,20 @@ class FileTreeLfwDatasets3dReconstructed(Tree):
         samples_lists_names, common_samples_names = self.get_common_samples_names(dataset_location, datasets_names, common_subjects, image_type)
         return common_subjects, samples_lists_names, common_samples_names
 
+    def get_subjects_and_samples_names(self, dataset_location: str, dataset_name: str, image_type: str):
+        sujects_names, samples_names_per_subject = None, None
+        if dataset_name.upper() == 'LFW' or dataset_name.upper() == 'TALFW':
+            sujects_names = self.get_sub_folders_one_level(dataset_location + '/' + dataset_name)
+            samples_names_per_subject = self._get_sample_names_per_subject(dataset_path=dataset_location + '/' + dataset_name,
+                                                                           subdirs_list=sujects_names)
+            # for subject, samples_list_name in zip(sujects_names, samples_names_per_subject):
+            #     print(dataset_name, ':', subject, ':', samples_list_name)
+        else:
+            raise Exception('BERNARDO: loading method not implemented for dataset \'' + dataset_name + '\'')
+        return sujects_names, samples_names_per_subject
 
 
+'''
 if __name__ == '__main__':
 
     input_path = '/home/bjgbiesseck/GitHub/MICA/demo/output'
@@ -109,3 +121,4 @@ if __name__ == '__main__':
     # for common_file_name in common_file_names:
     #     print('common_file_name:', common_file_name)
     # print('len(common_file_names):', len(common_file_names))
+'''

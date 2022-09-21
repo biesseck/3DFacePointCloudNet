@@ -75,14 +75,42 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_3D_descriptors_with_identities(args):
-    common_subjects, samples_lists_names, common_samples_names \
-        = FileTreeLfwDatasets3dReconstructed().get_common_subjects_and_samples_names(args.datasets_path,
-                                                                                     args.datasets_names, 'original')
-    # for i, common_subject in enumerate(common_subjects):
-    #     common_sample_names = common_samples_names[i]
-    #     print(i, '- common_subject:', common_subject, '   common_sample_names:', common_sample_names)
-    print('len(common_subjects):', len(common_subjects), '    len(common_samples_names):', sum([len(c) for c in common_samples_names]))
+def filter_dataset_subjects_and_samples(sujects_names: [], samples_per_subjects: [], criterias: []):
+    def remove_subjects_by_min_samples(min_samples: int, sujects_names: [], samples_per_subjects: []):
+        # num_samples_per_subject = np.zeros((len(samples_per_subjects),), dtype=int)
+        # for i in range(len(samples_per_subjects)):
+        for i in range(len(samples_per_subjects)-1, -1, -1):
+            if len(samples_per_subjects[i]) < min_samples:
+                # print(i, '- subject:', sujects_names[i], '   samples:', samples_per_subjects[i])
+                sujects_names.pop(i)
+                samples_per_subjects.pop(i)
+
+    criteria = 'min_samples'
+    if criteria in criterias:
+        value = criterias[criterias.index(criteria) + 1]
+        remove_subjects_by_min_samples(value, sujects_names, samples_per_subjects)
+
+
+def load_3D_descriptors_with_labels(args):
+
+    dataset = {}
+    for dataset_name in args.datasets_names:
+        dataset_sujects, dataset_samples_per_subject \
+            = FileTreeLfwDatasets3dReconstructed().get_subjects_and_samples_names(args.datasets_path, dataset_name, 'original')
+        # for subject, samples_list_name in zip(dataset_sujects, dataset_samples_per_subject):
+        #     print(dataset_name, ':', subject, ':', samples_list_name)
+        # input('Paused... press ENTER')
+        # print(dataset_name, '  len(dataset_sujects) before:', len(dataset_sujects), '  len(dataset_samples_per_subject) before:', len(dataset_samples_per_subject))
+
+        filter_dataset_subjects_and_samples(dataset_sujects, dataset_samples_per_subject, criterias=['min_samples', 2])
+        # for subject, samples_list_name in zip(dataset_sujects, dataset_samples_per_subject):
+        #     print(dataset_name, ':', subject, ':', samples_list_name)
+        # input('Paused... press ENTER')
+        # print(dataset_name, '  len(dataset_sujects) after:', len(dataset_sujects), '  len(dataset_samples_per_subject) after:', len(dataset_samples_per_subject))
+        
+        # dataset[dataset_name] =
+
+
 
     # TODO: LOAD 3D DESCRIPTORS FROM DISK
 
@@ -94,15 +122,19 @@ def do_face_verification():
     pass
 
 
-def main(args):
+def main_verification(args):
     # LOAD DATASETS (LFW and TALFW)
-    descriptors_3D = load_3D_descriptors_with_identities(args)
+    descriptors_3D, labels_gt = load_3D_descriptors_with_labels(args)
 
     # LOAD POINT CLOUD DESCRIPTORS
 
     # DO MATCHING (1:1)
 
     pass
+
+def main_teste():
+    for i in range(10-1, -1, -1):
+        print('main_teste: i=', i)
 
 if __name__ == '__main__':
     # sys.argv += ['-epochs', '100']
@@ -121,4 +153,5 @@ if __name__ == '__main__':
     args = parse_args()
     # print('__main__(): args=', args)
 
-    main(args)
+    main_verification(args)
+    # main_teste()
