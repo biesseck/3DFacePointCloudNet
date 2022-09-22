@@ -198,13 +198,13 @@ def do_face_verification_one_dataset(descriptors_3D, labels_gt_str, labels_gt_in
     labels_gt = torch.tensor(labels_gt_int)
 
     # # TESTE
-    # n = 10
+    # n = 1000
     # descriptors_3D = descriptors_3D[:, 0:n, :]  # TESTE BERNARDO
     # labels_gt = labels_gt[0:n]            # TESTE BERNARDO
     # print('descriptors_3D.shape:', descriptors_3D.shape, '    len(labels_gt):', len(labels_gt))
     # print('descriptors_3D[:,0,:].shape:', descriptors_3D[:,0,:].shape)
     # for i in range(len(labels_gt)):
-    #     print('labels_gt[i]:', labels_gt[i])
+    #     print('labels_gt['+str(i)+']:', labels_gt[i])
     # print('-------------------------------------')
     # # TESTE
 
@@ -217,7 +217,8 @@ def do_face_verification_one_dataset(descriptors_3D, labels_gt_str, labels_gt_in
     # print('dist:', dist, '    dist.min:', dist.min())
     # # TESTE
 
-    t_min, t_max, t_interv = 0, 1, 0.001
+    t_min, t_max, t_interv = 0, 1, 0.01
+    # t_min, t_max, t_interv = 0.99, 1, 0.0001
     # thresholds = np.arange(t_min, t_max + t_interv, t_interv)
     thresholds = torch.arange(t_min, t_max + t_interv, t_interv)
 
@@ -229,10 +230,17 @@ def do_face_verification_one_dataset(descriptors_3D, labels_gt_str, labels_gt_in
     
     for i in range(descriptors_3D.shape[1]):   # total num samples
         print('sample: ' + str(i) + '/' + str(descriptors_3D.shape[1]), end='\r')
-        dist = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D.transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D.transpose(1, 0)
+        # dist = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D.transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D.transpose(1, 0)
+        dist = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D[:,i:,:].transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D[:,i:].transpose(1, 0)
 
-        right_label_indexes = labels_gt == labels_gt[i]
-        wrong_label_indexes = labels_gt != labels_gt[i]
+        # print('labels_gt:', labels_gt)
+        right_label_indexes = labels_gt[i:] == labels_gt[i]
+        # wrong_label_indexes = labels_gt[i:] != labels_gt[i]
+        wrong_label_indexes = ~right_label_indexes
+        # print('dist.size():', dist.size())
+        # print('right_label_indexes.size():', right_label_indexes.size())
+        # print('wrong_label_indexes.size():', wrong_label_indexes.size())
+        # input('Paused...')
 
         for t, tresh in enumerate(thresholds):
             tp = torch.sum(dist[right_label_indexes] >= tresh) - 1
@@ -245,11 +253,10 @@ def do_face_verification_one_dataset(descriptors_3D, labels_gt_str, labels_gt_in
             tn_total[t] += tn
             fn_total[t] += fn
 
-    # print('tp_total:', tp_total)
-    # print('fp_total:', fp_total)
-    # print('tn_total:', tn_total)
-    # print('fn_total:', fn_total)
-    # input('Paused...')
+    print('tp_total:', tp_total)
+    print('fp_total:', fp_total)
+    print('tn_total:', tn_total)
+    print('fn_total:', fn_total)
 
     results = {'tp_total': tp_total, 'fp_total': fp_total, 'tn_total': tn_total, 'fn_total': fn_total}
     return results
@@ -278,8 +285,6 @@ def main_verification(args):
         fp_total = results['fp_total']
         tn_total = results['tn_total']
         fn_total = results['fn_total']
-
-        print('tp_total.shape:', tp_total.shape)
 
     else:
         raise Exception('Face verification for multiple datasets not implemented yet!')
