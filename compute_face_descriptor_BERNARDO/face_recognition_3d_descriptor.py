@@ -98,7 +98,8 @@ def load_3D_descriptors_from_disk(dataset_path: str, dataset_name: str, sujects_
     # print('total_samples_dataset:', total_samples_dataset)
     # descriptors_3D = np.zeros((total_samples_dataset, 512), dtype=float)
     descriptors_3D = torch.zeros((total_samples_dataset, 512), dtype=float)
-    labels_gt = [''] * total_samples_dataset
+    labels_gt_str = [''] * total_samples_dataset
+    labels_gt_int = [0] * total_samples_dataset
 
     i = 0
     for j in range(len(sujects_names)):
@@ -112,9 +113,10 @@ def load_3D_descriptors_from_disk(dataset_path: str, dataset_name: str, sujects_
             # print('loaded!   shape:', one_3D_descriptor.shape)
             # input('Paused... press ENTER')
             descriptors_3D[i] = one_3D_descriptor
-            labels_gt[i] = sujects_names[j]
+            labels_gt_str[i] = sujects_names[j]
+            labels_gt_int[i] = j
             i += 1
-    return descriptors_3D, labels_gt
+    return descriptors_3D, labels_gt_str, labels_gt_int
 
 
 def load_3D_descriptors_with_labels(args):
@@ -134,20 +136,20 @@ def load_3D_descriptors_with_labels(args):
         # input('Paused... press ENTER')
         # print(dataset_name, '  len(dataset_sujects) after:', len(dataset_sujects), '  len(dataset_samples_names_per_subject) after:', len(dataset_samples_names_per_subject))
 
-        dataset_descriptors_3D, dataset_labels_gt = \
+        dataset_descriptors_3D, dataset_labels_gt_str, dataset_labels_gt_int = \
             load_3D_descriptors_from_disk(args.datasets_path, dataset_name, dataset_sujects, dataset_samples_names_per_subject, args.desc_file_ext)
 
-        datasets[(dataset_name, 'sujects')] = dataset_sujects
+        datasets[(dataset_name, 'sujects')] = np.array(dataset_sujects)
         datasets[(dataset_name, 'samples_names')] = dataset_samples_names_per_subject
         datasets[(dataset_name, 'descriptors_3D')] = dataset_descriptors_3D
-        datasets[(dataset_name, 'labels_gt')] = dataset_labels_gt
+        datasets[(dataset_name, 'labels_gt_str')] = np.array(dataset_labels_gt_str)
+        datasets[(dataset_name, 'labels_gt_int')] = np.array(dataset_labels_gt_int)
     return datasets
 
 
-# TODO
-def do_face_verification_one_dataset(descriptors_3D, labels_gt):
+def do_face_identification_one_dataset(descriptors_3D, labels_gt):
     descriptors_3D = descriptors_3D.unsqueeze(0)
-    tp, fp = 0, 0
+    tp, fp, tn, fn = 0, 0, 0, 0
 
     # # TESTE
     # n = 20
@@ -191,20 +193,93 @@ def do_face_verification_one_dataset(descriptors_3D, labels_gt):
     print('tp:', tp, '    fp:', fp)
 
 
+def do_face_verification_one_dataset(descriptors_3D, labels_gt_str, labels_gt_int):
+    descriptors_3D = descriptors_3D.unsqueeze(0)
+    labels_gt = torch.tensor(labels_gt_int)
+
+    # # TESTE
+    # n = 10
+    # descriptors_3D = descriptors_3D[:, 0:n, :]  # TESTE BERNARDO
+    # labels_gt = labels_gt[0:n]            # TESTE BERNARDO
+    # print('descriptors_3D.shape:', descriptors_3D.shape, '    len(labels_gt):', len(labels_gt))
+    # print('descriptors_3D[:,0,:].shape:', descriptors_3D[:,0,:].shape)
+    # for i in range(len(labels_gt)):
+    #     print('labels_gt[i]:', labels_gt[i])
+    # print('-------------------------------------')
+    # # TESTE
+
+    norms_descriptors_3D = torch.norm(descriptors_3D, p=2, dim=2)
+    # print('norms_descriptors_3D:', norms_descriptors_3D)
+
+    # # TESTE
+    # i = 0
+    # dist = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D.transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D.transpose(1, 0)
+    # print('dist:', dist, '    dist.min:', dist.min())
+    # # TESTE
+
+    t_min, t_max, t_interv = 0, 1, 0.001
+    # thresholds = np.arange(t_min, t_max + t_interv, t_interv)
+    thresholds = torch.arange(t_min, t_max + t_interv, t_interv)
+
+    # tp_total = np.zeros((thresholds.shape[0],), dtype=int)
+    tp_total = torch.zeros((thresholds.shape[0],), dtype=int)
+    fp_total = tp_total.clone()
+    tn_total = tp_total.clone()
+    fn_total = tp_total.clone()
+    
+    for i in range(descriptors_3D.shape[1]):   # total num samples
+        print('sample: ' + str(i) + '/' + str(descriptors_3D.shape[1]), end='\r')
+        dist = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D.transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D.transpose(1, 0)
+
+        right_label_indexes = labels_gt == labels_gt[i]
+        wrong_label_indexes = labels_gt != labels_gt[i]
+
+        for t, tresh in enumerate(thresholds):
+            tp = torch.sum(dist[right_label_indexes] >= tresh) - 1
+            fp = torch.sum(dist[wrong_label_indexes] >= tresh)
+            tn = torch.sum(dist[wrong_label_indexes] < tresh)
+            fn = torch.sum(dist[right_label_indexes] < tresh)
+
+            tp_total[t] += tp
+            fp_total[t] += fp
+            tn_total[t] += tn
+            fn_total[t] += fn
+
+    # print('tp_total:', tp_total)
+    # print('fp_total:', fp_total)
+    # print('tn_total:', tn_total)
+    # print('fn_total:', fn_total)
+    # input('Paused...')
+
+    results = {'tp_total': tp_total, 'fp_total': fp_total, 'tn_total': tn_total, 'fn_total': fn_total}
+    return results
+
+
 def main_verification(args):
     # LOAD DATASETS (LFW and TALFW)
-    print('Loading datasets (3D face descriptor)...')
+    print('Loading datasets (3D face descriptor):', args.datasets_names)
     datasets = load_3D_descriptors_with_labels(args)
 
     if len(args.datasets_names) < 2:
         dataset_sujects = datasets[(args.datasets_names[0], 'sujects')]
         dataset_samples_names_per_subject = datasets[(args.datasets_names[0], 'samples_names')]
         dataset_descriptors_3D = datasets[(args.datasets_names[0], 'descriptors_3D')]
-        dataset_labels_gt = datasets[(args.datasets_names[0], 'labels_gt')]
-        print('    sujects:', len(dataset_sujects), '   samples:', len(dataset_labels_gt))
+        dataset_labels_gt_str = datasets[(args.datasets_names[0], 'labels_gt_str')]
+        dataset_labels_gt_int = datasets[(args.datasets_names[0], 'labels_gt_int')]
+        print('    sujects:', len(dataset_sujects), '   samples:', len(dataset_labels_gt_str))
 
-        print('Doing face verification...')
-        results = do_face_verification_one_dataset(dataset_descriptors_3D, dataset_labels_gt)
+        # print('Doing face identification (1:N)...')
+        # results = do_face_identification_one_dataset(dataset_descriptors_3D, dataset_labels_gt_str)
+
+        print('Doing face verification (1:1)...')
+        results = do_face_verification_one_dataset(dataset_descriptors_3D, dataset_labels_gt_str, dataset_labels_gt_int)
+
+        tp_total = results['tp_total']
+        fp_total = results['fp_total']
+        tn_total = results['tn_total']
+        fn_total = results['fn_total']
+
+        print('tp_total.shape:', tp_total.shape)
 
     else:
         raise Exception('Face verification for multiple datasets not implemented yet!')
