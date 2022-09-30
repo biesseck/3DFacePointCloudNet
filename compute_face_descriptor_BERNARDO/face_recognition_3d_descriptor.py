@@ -7,8 +7,10 @@ import glob
 # from pointnet2.train.train_triplet import *
 import pcl
 import torch
+import matplotlib as plt
 
 from file_tree import *
+from plots_3d_face_descriptors import *
 
 
 def parse_args():
@@ -193,20 +195,21 @@ def do_face_identification_one_dataset(descriptors_3D, labels_gt):
     print('tp:', tp, '    fp:', fp)
 
 
-def do_face_verification_one_dataset(descriptors_3D, labels_gt_str, labels_gt_int):
+def do_face_verification_one_dataset(dataset_name, descriptors_3D, labels_gt_str, labels_gt_int):
     descriptors_3D = descriptors_3D.unsqueeze(0)
     labels_gt = torch.tensor(labels_gt_int)
 
-    # # TESTE
-    # n = 1000
-    # descriptors_3D = descriptors_3D[:, 0:n, :]  # TESTE BERNARDO
-    # labels_gt = labels_gt[0:n]            # TESTE BERNARDO
-    # print('descriptors_3D.shape:', descriptors_3D.shape, '    len(labels_gt):', len(labels_gt))
-    # print('descriptors_3D[:,0,:].shape:', descriptors_3D[:,0,:].shape)
-    # for i in range(len(labels_gt)):
-    #     print('labels_gt['+str(i)+']:', labels_gt[i])
-    # print('-------------------------------------')
-    # # TESTE
+    # TESTE
+    n = 100
+    descriptors_3D = descriptors_3D[:, 0:n, :]  # TESTE BERNARDO
+    labels_gt = labels_gt[0:n]                  # TESTE BERNARDO
+    labels_gt_str = labels_gt_str[0:n]
+    print('descriptors_3D.shape:', descriptors_3D.shape, '    len(labels_gt):', len(labels_gt))
+    print('descriptors_3D[:,0,:].shape:', descriptors_3D[:,0,:].shape)
+    for i in range(len(labels_gt)):
+        print('labels_gt['+str(i)+']:', labels_gt[i])
+    print('-------------------------------------')
+    # TESTE
 
     norms_descriptors_3D = torch.norm(descriptors_3D, p=2, dim=2)
     # print('norms_descriptors_3D:', norms_descriptors_3D)
@@ -228,10 +231,11 @@ def do_face_verification_one_dataset(descriptors_3D, labels_gt_str, labels_gt_in
     tn_total = tp_total.clone()
     fn_total = tp_total.clone()
     
-    for i in range(descriptors_3D.shape[1]):   # total num samples
+    for i in range(descriptors_3D.shape[1] - 1):   # the last descriptor has already been compared to all others
         print('sample: ' + str(i) + '/' + str(descriptors_3D.shape[1]), end='\r')
         # dist = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D.transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D.transpose(1, 0)
         dist = torch.sum(torch.mul(descriptors_3D[:,i,:], descriptors_3D[:,i:,:].transpose(1, 0)), dim=2) / norms_descriptors_3D[:,i] / norms_descriptors_3D[:,i:].transpose(1, 0)
+        # print('dist:', dist)
 
         # print('labels_gt:', labels_gt)
         right_label_indexes = labels_gt[i:] == labels_gt[i]
@@ -253,10 +257,18 @@ def do_face_verification_one_dataset(descriptors_3D, labels_gt_str, labels_gt_in
             tn_total[t] += tn
             fn_total[t] += fn
 
-    print('tp_total:', tp_total)
-    print('fp_total:', fp_total)
-    print('tn_total:', tn_total)
-    print('fn_total:', fn_total)
+        print('Saving figure...')
+        Plots_3D_Face_Descriptors().plot_distance_one_descriptor_to_all_others(dist.detach().numpy(),
+                                                                               labels=labels_gt_str[i:],
+                                                                               title=dataset_name + ' - Cosine distance between 3D face descriptors',
+                                                                               path_figure=os.path.abspath(os.getcwd()) + '/cosine_distance.png',
+                                                                               save=True)
+        sys.exit(0)
+
+    # print('tp_total:', tp_total)
+    # print('fp_total:', fp_total)
+    # print('tn_total:', tn_total)
+    # print('fn_total:', fn_total)
 
     results = {'tp_total': tp_total, 'fp_total': fp_total, 'tn_total': tn_total, 'fn_total': fn_total}
     return results
@@ -279,7 +291,7 @@ def main_verification(args):
         # results = do_face_identification_one_dataset(dataset_descriptors_3D, dataset_labels_gt_str)
 
         print('Doing face verification (1:1)...')
-        results = do_face_verification_one_dataset(dataset_descriptors_3D, dataset_labels_gt_str, dataset_labels_gt_int)
+        results = do_face_verification_one_dataset(args.datasets_names[0], dataset_descriptors_3D, dataset_labels_gt_str, dataset_labels_gt_int)
 
         tp_total = results['tp_total']
         fp_total = results['fp_total']
@@ -312,6 +324,7 @@ if __name__ == '__main__':
     sys.argv += ['-datasets_path', '/home/bjgbiesseck/GitHub/MICA/demo/output']
 
     sys.argv += ['-datasets_names', ['lfw']]
+    # sys.argv += ['-datasets_names', ['TALFW']]
     # sys.argv += ['-datasets_names', ['lfw', 'TALFW']]
 
     sys.argv += ['-desc_file_ext', '*from_OBJ.pt']

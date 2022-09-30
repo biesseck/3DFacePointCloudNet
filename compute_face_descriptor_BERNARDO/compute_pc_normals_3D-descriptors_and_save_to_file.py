@@ -101,10 +101,11 @@ def get_normals(cloud):
     # normals: pcl._pcl.PointCloud_Normal,size: 26475
     # cloud: pcl._pcl.PointCloud
     """
-    # cloud = pcl.load(cloud_path)
     feature = cloud.make_NormalEstimation()
-    # feature.set_RadiusSearch(0.1) #Use all neighbors in a sphere of radius 3cm
-    feature.set_KSearch(3)
+    # feature.set_KSearch(3)   #Use all neighbors in a sphere of radius 3cm
+    # feature.set_KSearch(10)  # Use all neighbors in a sphere of radius 1 cm
+    feature.set_KSearch(50)  # Use all neighbors in a sphere of radius 5 cm
+    # feature.set_KSearch(100)  # Use all neighbors in a sphere of radius 10 cm
     normals = feature.compute()
 
     # return normals            # original
@@ -124,10 +125,16 @@ def get_pointcloud_with_normals(cloud):
 
 def preprocess_pointcloud_with_normals(pc_with_normals):
     point_set = pc_with_normals
-    # normlize
-    point_set[:, 0:3] = (point_set[:, 0:3]) / 100
+    # normalize
+    point_set[:, 0:3] = (point_set[:, 0:3]) / 1         # BERNARDO
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 10      # BERNARDO
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 100     # original
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 1000    # BERNARDO
     point_set = torch.from_numpy(point_set)
-    point_set[:, 6] = torch.pow(point_set[:, 6], 0.1)
+    # point_set[:, 6] = torch.pow(point_set[:, 6], 0.1)
+    # point_set[:, 6] = torch.pow(point_set[:, 6], 0.5)
+    # point_set[:, 6] = torch.pow(point_set[:, 6], 1.5)
+    point_set[:, 6] = torch.pow(point_set[:, 6], -1.5)
     # print('point_set.shape:', point_set.shape)
 
     input = point_set
