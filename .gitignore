@@ -4,6 +4,10 @@
 *.pyc
 *.swp
 
+*.png
+*.jpg
+
+
 Data/*.h5
 
 build/
