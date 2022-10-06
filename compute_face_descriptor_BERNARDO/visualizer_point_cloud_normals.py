@@ -26,7 +26,7 @@ def load_point_cloud(path_point_cloud):
 '''
 
 
-def get_normals(cloud, radius=50):
+def get_normals(cloud, radius=30):
     """
     FROM: https://pcl.gitbook.io/tutorial/part-2/part02-chapter03/part02-chapter03-normal-pcl-python
     The actual *compute* call from the NormalEstimation class does nothing internally but:
@@ -39,10 +39,7 @@ def get_normals(cloud, radius=50):
     # cloud: pcl._pcl.PointCloud
     """
     feature = cloud.make_NormalEstimation()
-    # feature.set_KSearch(3)   #Use all neighbors in a sphere of radius 3 mm
-    # feature.set_KSearch(10)  # Use all neighbors in a sphere of radius 1 cm
-    feature.set_KSearch(50)  # Use all neighbors in a sphere of radius 5 cm
-    # feature.set_KSearch(100)  # Use all neighbors in a sphere of radius 10 cm
+    feature.set_KSearch(radius)    # Use all neighbors in a sphere of radius 5 cm
     normals = feature.compute()
 
     return normals            # original
@@ -81,7 +78,13 @@ def main(path_point_cloud: str):
     ptcloud_centred = load_point_cloud(path_point_cloud)
 
     print('Computing normals...')
-    normals = get_normals(ptcloud_centred)
+    # radius_search = 3   # 3 mm
+    # radius_search = 5   # 5 mm
+    # radius_search = 10  # 1 cm
+    # radius_search = 20  # 2 cm
+    radius_search = 50  # 5 cm
+    # radius_search = 100  # 10 cm
+    normals = get_normals(ptcloud_centred, radius_search)
 
     print('Showing point cloud...')
     # show_point_cloud(ptcloud_centred)
@@ -90,7 +93,8 @@ def main(path_point_cloud: str):
 
 if __name__ == '__main__':
 
-    path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
-    # path_point_cloud = '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
+    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
+    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
+    path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz'
 
     main(path_point_cloud)
