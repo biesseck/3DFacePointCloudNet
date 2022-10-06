@@ -69,6 +69,7 @@ def parse_args():
         "-dataset_path", type=str, default='',
         help="Path of dataset root folder containing 3D face reconstructions (OBJ or PLY format)"
     )
+    parser.add_argument("-file_ext", type=str, default='.obj', help="file extension to identify correct data to be loaded")
     return parser.parse_args()
 
 
@@ -86,6 +87,7 @@ class Tree:
         for folder in Tree().walk(Path(os.getcwd()) / dir_path):
             # print(folder)
             folders.append(folder)
+        folders.sort()
         return folders
 
 
@@ -145,52 +147,53 @@ def preprocess_pointcloud_with_normals(pc_with_normals):
 
 
 
-def load_pc_and_compute_normals(model, folder):
+def load_pc_and_compute_normals(args, model, folder):
     # image_paths = sorted(glob(folder + '/*.obj')) + sorted(glob(folder + '/*.ply'))
-    image_paths = sorted(glob(folder + '/*.obj'))
+    # image_paths = sorted(glob(folder + '/*.obj'))
+    image_paths = sorted(glob(folder + '/*' + args.file_ext))
     for image_path_OBJ in tqdm(image_paths):
-        image_path_PLY = image_path_OBJ.replace('.obj', '.ply')
+        ### image_path_PLY = image_path_OBJ.replace('.obj', '.ply')
         # print('image_path:', image_path)
         name = Path(image_path_OBJ).stem
         # print('name:', name)
         print('Loading point cloud:', image_path_OBJ)
         cloud_from_OBJ = pcl.load(image_path_OBJ)
-        cloud_from_PLY = pcl.load(image_path_PLY)
+        ### cloud_from_PLY = pcl.load(image_path_PLY)
         # print('cloud_from_OBJ.to_array().shape:', cloud_from_OBJ.to_array().shape)
         # print('cloud_from_PLY.to_array().shape:', cloud_from_PLY.to_array().shape)
 
         pc_with_normals_from_OBJ = get_pointcloud_with_normals(cloud_from_OBJ)
-        pc_with_normals_from_PLY = get_pointcloud_with_normals(cloud_from_PLY)
+        ### pc_with_normals_from_PLY = get_pointcloud_with_normals(cloud_from_PLY)
         # print('pc_with_normals_from_OBJ.shape:', pc_with_normals_from_OBJ.shape)
         # print('pc_with_normals_from_PLY.shape:', pc_with_normals_from_PLY.shape)
 
         pc_with_normals_from_OBJ = preprocess_pointcloud_with_normals(pc_with_normals_from_OBJ)
-        pc_with_normals_from_PLY = preprocess_pointcloud_with_normals(pc_with_normals_from_PLY)
+        ### pc_with_normals_from_PLY = preprocess_pointcloud_with_normals(pc_with_normals_from_PLY)
 
-        path_pc_with_normals_from_OBJ = image_path_OBJ.replace('.obj', '_OBJ_with_normals.pt')
-        path_pc_with_normals_from_PLY = image_path_PLY.replace('.ply', '_PLY_with_normals.pt')
+        path_pc_with_normals_from_OBJ = image_path_OBJ.replace(args.file_ext, '_with_normals.pt')
+        ### path_pc_with_normals_from_PLY = image_path_PLY.replace('.ply', '_PLY_with_normals.pt')
         print('Saving mesh with normals:', path_pc_with_normals_from_OBJ, end=' ... ')
         torch.save(pc_with_normals_from_OBJ, path_pc_with_normals_from_OBJ)
-        torch.save(pc_with_normals_from_PLY, path_pc_with_normals_from_PLY)
+        ### torch.save(pc_with_normals_from_PLY, path_pc_with_normals_from_PLY)
         print('Saved!')
 
 
         print('Computing 3D face descriptor ...')
         p_feature_from_OBJ = torch.zeros((1, 1, 512))  # BERNARDO
-        p_feature_from_PLY = torch.zeros((1, 1, 512))  # BERNARDO
+        ### p_feature_from_PLY = torch.zeros((1, 1, 512))  # BERNARDO
         feat_from_OBJ = model.forward(pc_with_normals_from_OBJ)  # 1x512
-        feat_from_PLY = model.forward(pc_with_normals_from_PLY)  # 1x512
+        ### feat_from_PLY = model.forward(pc_with_normals_from_PLY)  # 1x512
         p_feature_from_OBJ[:, :, :] = feat_from_OBJ.cpu()  # 1x1x512
-        p_feature_from_PLY[:, :, :] = feat_from_PLY.cpu()  # 1x1x512
+        ### p_feature_from_PLY[:, :, :] = feat_from_PLY.cpu()  # 1x1x512
         p_feature_norm_from_OBJ = torch.norm(p_feature_from_OBJ, p=2, dim=2)
-        p_feature_norm_from_PLY = torch.norm(p_feature_from_PLY, p=2, dim=2)
-        path_feat_norm_from_OBJ = image_path_OBJ.replace(name+'.obj', '3D_face_descriptor_from_OBJ.pt')
-        path_feat_norm_from_PLY = image_path_PLY.replace(name+'.ply', '3D_face_descriptor_from_PLY.pt')
+        ### p_feature_norm_from_PLY = torch.norm(p_feature_from_PLY, p=2, dim=2)
+        path_feat_norm_from_OBJ = image_path_OBJ.replace(name+args.file_ext, '3D_face_descriptor.pt')
+        ### path_feat_norm_from_PLY = image_path_PLY.replace(name+'.ply', '3D_face_descriptor_from_PLY.pt')
         print('Saving 3D face descriptor:', path_feat_norm_from_OBJ, end=' ... ')
         torch.save(feat_from_OBJ, path_feat_norm_from_OBJ)
-        torch.save(feat_from_PLY, path_feat_norm_from_PLY)
+        ### torch.save(feat_from_PLY, path_feat_norm_from_PLY)
         print('Saved!')
-
+                
         # loaded_feat_from_OBJ = torch.load(path_feat_norm_from_OBJ)
         # loaded_feat_from_PLY = torch.load(path_feat_norm_from_PLY)
         # print(loaded_feat_from_OBJ.shape, 'loaded_feat_from_OBJ[:,0:10]:', loaded_feat_from_OBJ[:,0:10])
@@ -241,7 +244,8 @@ def main(args):
     for i in range(len(sub_folders)):
         sub_folder = sub_folders[i]
         # print('sub_folder:', sub_folder)
-        load_pc_and_compute_normals(model, sub_folder)
+        print('face_recognition_3d_descriptor.py: main(): sub_folder=' + str(i) + '/' + str(len(sub_folders)))
+        load_pc_and_compute_normals(args, model, sub_folder)
 
 
 
@@ -251,6 +255,10 @@ if __name__ == '__main__':
 
     sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw']
     # sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/TALFW']
+
+    # sys.argv += ['-file_ext', '.obj']
+    # sys.argv += ['-file_ext', '.ply']
+    sys.argv += ['-file_ext', '.xyz']    # upsampling point cloud (Meta-PU model)
 
     args = parse_args()
     # print('__main__(): args=', args)
