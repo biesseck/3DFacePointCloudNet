@@ -1,3 +1,4 @@
+import sys
 import os.path
 from pathlib import Path
 import glob
@@ -90,6 +91,31 @@ class FileTreeLfwDatasets3dReconstructed(Tree):
             sujects_names = self.get_sub_folders_one_level(dataset_location + '/' + dataset_name)
             samples_names_per_subject = self._get_sample_names_per_subject(dataset_path=dataset_location + '/' + dataset_name,
                                                                            subdirs_list=sujects_names)
+            # for subject, samples_list_name in zip(sujects_names, samples_names_per_subject):
+            #     print(dataset_name, ':', subject, ':', samples_list_name)
+        else:
+            raise Exception('BERNARDO: loading method not implemented for dataset \'' + dataset_name + '\'')
+        return sujects_names, samples_names_per_subject
+
+
+
+    # TESTE
+    def get_subsample_lfw_subjects_and_samples_names(self, dataset_location: str, dataset_name: str, image_type: str):
+        def load_lfw_subsamples():
+            path_file = './lfw_subsamples_folders_with_3_images.txt'
+            with open(path_file) as f:
+                sujects_names = [line.replace('\n', '') for line in f]
+                # sujects_names = [dataset_location+'/'+dataset_name+'/'+ line.replace('\n','') for line in f]
+                return sujects_names
+
+        sujects_names, samples_names_per_subject = None, None
+        if dataset_name.upper() == 'LFW' or dataset_name.upper() == 'TALFW':
+            # sujects_names = self.get_sub_folders_one_level(dataset_location + '/' + dataset_name)
+            sujects_names = load_lfw_subsamples()
+            # print('sujects_names:', sujects_names)
+            samples_names_per_subject = self._get_sample_names_per_subject(dataset_path=dataset_location + '/' + dataset_name,
+                                                                           subdirs_list=sujects_names)
+            # print('samples_names_per_subject:', samples_names_per_subject)
             # for subject, samples_list_name in zip(sujects_names, samples_names_per_subject):
             #     print(dataset_name, ':', subject, ':', samples_list_name)
         else:

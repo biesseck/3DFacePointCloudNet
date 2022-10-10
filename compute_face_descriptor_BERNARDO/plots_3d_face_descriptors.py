@@ -25,7 +25,7 @@ class Plots_3D_Face_Descriptors:
         ax[0].set_ylabel('Cosine distance')
 
         ax[1].plot(x, dist, marker='o', linewidth=2.0)
-        ax[1].set(xlim=(-1, x.shape[0]), xticks=np.arange(0, x.shape[0]), ylim=(0.98, 1.01))
+        ax[1].set(xlim=(-1, x.shape[0]), xticks=np.arange(0, x.shape[0]), ylim=(0.9, 1.01))
         ax[1].set_xticklabels(labels)
         ax[1].tick_params(axis='x', rotation=90)
         ax[1].set_xlabel('Face samples')
