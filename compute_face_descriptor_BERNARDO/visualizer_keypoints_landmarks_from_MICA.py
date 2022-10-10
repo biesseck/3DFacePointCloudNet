@@ -52,6 +52,29 @@ def show_point_cloud_with_keypoints(ptcloud_centred, key_points):
     viewer.Spin()
 
 
+def show_point_cloud_with_keypoints_and_normals(ptcloud_centred, key_points, normals):
+    # visualize normals
+    viewer = pcl.pcl_visualization.PCLVisualizering()
+    viewer.SetBackgroundColor(0, 0, 0)
+    # viewer.SetBackgroundColor(255, 255, 255)
+
+    # viewer.AddPointCloud(ptcloud_centred, b'cloud')
+    # viewer.AddPointCloud(key_points, b'cloud')
+
+    pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(ptcloud_centred, 255, 0, 0)
+    viewer.AddPointCloud_ColorHandler(ptcloud_centred, pccolor1, b'cloud', 0)
+    viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 2, b'cloud')
+
+    pccolor2 = pcl.pcl_visualization.PointCloudColorHandleringCustom(ptcloud_centred, 0, 255, 0)
+    viewer.AddPointCloud_ColorHandler(key_points, pccolor2, b'keypoints', 0)
+    viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 3, b'keypoints')
+
+    viewer.AddPointCloudNormals(ptcloud_centred, normals, 1, 10, b'normals')
+
+    viewer.Spin()
+
+
+
 def show_point_cloud_with_normals(cloud, normals):
 
     # visualize normals
@@ -78,6 +101,8 @@ def filter_points_by_radius(cloud, keypoint_ref, radius=90.0):
     cloud = pcl.PointCloud(cloud.to_array()[ind])
     return cloud
 
+
+
 def main(path_point_cloud: str, path_key_points: str):
     print('Loading point cloud:', path_point_cloud, '...')
     ptcloud_centred = load_point_cloud(path_point_cloud)
@@ -89,8 +114,18 @@ def main(path_point_cloud: str, path_key_points: str):
     ptcloud_centred = filter_points_by_radius(ptcloud_centred, key_points[30], radius=120.0)  # 120 mm from nose tip
     # ptcloud_centred = filter_points_by_radius(ptcloud_centred, key_points[30], radius=150.0)  # 150 mm from nose tip
 
+    print('Computing normals...')
+    # radius_search = 3   # 3 mm
+    # radius_search = 5   # 5 mm
+    # radius_search = 10  # 1 cm
+    # radius_search = 20  # 2 cm
+    radius_search = 50  # 5 cm
+    # radius_search = 100  # 10 cm
+    normals = get_normals(ptcloud_centred, radius_search)
+
     print('Showing point cloud...')
-    show_point_cloud_with_keypoints(ptcloud_centred, key_points)
+    # show_point_cloud_with_keypoints(ptcloud_centred, key_points)
+    show_point_cloud_with_keypoints_and_normals(ptcloud_centred, key_points, normals)
 
 
 
