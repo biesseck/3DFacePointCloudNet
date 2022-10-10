@@ -75,6 +75,7 @@ def parse_args():
     parser.add_argument(
         "-desc_file_ext", type=str, default='_OBJ.pt', help="Extension or final part of descriptor file"
     )
+    parser.add_argument("-dataset_size", type=str, default='whole', help="whole or subset")
 
     return parser.parse_args()
 
@@ -107,7 +108,7 @@ def load_3D_descriptors_from_disk(dataset_path: str, dataset_name: str, sujects_
     for j in range(len(sujects_names)):
         for k in range(len(samples_per_subject[j])):
             path_descriptor_to_find = os.path.join(dataset_path, dataset_name, sujects_names[j], samples_per_subject[j][k], desc_file_ext)
-            # print('path_descriptor:', path_descriptor)
+            print('path_descriptor_to_find:', path_descriptor_to_find)
             path_found_descriptor = glob.glob(path_descriptor_to_find)[0]
             # print('path_descriptor:', path_descriptor)
             # print('Loading 3D face descriptor:', path_found_descriptor, '...   sujects_names[j]:', sujects_names[j])
@@ -122,21 +123,31 @@ def load_3D_descriptors_from_disk(dataset_path: str, dataset_name: str, sujects_
 
 
 def load_3D_descriptors_with_labels(args):
-
     datasets = {}
     for dataset_name in args.datasets_names:
-        dataset_sujects, dataset_samples_names_per_subject \
-            = FileTreeLfwDatasets3dReconstructed().get_subjects_and_samples_names(args.datasets_path, dataset_name, 'original')
+        
+        if args.dataset_size == 'whole':  # loads whole dataset
+            dataset_sujects, dataset_samples_names_per_subject \
+                = FileTreeLfwDatasets3dReconstructed().get_subjects_and_samples_names(args.datasets_path, dataset_name, 'original')
+
+        elif args.dataset_size == 'subset':  # loads only a dataset subset for fast tests
+            dataset_sujects, dataset_samples_names_per_subject \
+                = FileTreeLfwDatasets3dReconstructed().get_subsample_lfw_subjects_and_samples_names(args.datasets_path, dataset_name, 'original')
+
+        # # PRINTING ONLY
         # for subject, samples_list_name in zip(dataset_sujects, dataset_samples_names_per_subject):
         #     print(dataset_name, ':', subject, ':', samples_list_name)
         # input('Paused... press ENTER')
         # print(dataset_name, '  len(dataset_sujects) before:', len(dataset_sujects), '  len(dataset_samples_names_per_subject) before:', len(dataset_samples_names_per_subject))
+        # # PRINTING ONLY
 
         filter_dataset_subjects_and_samples(dataset_sujects, dataset_samples_names_per_subject, criterias=['min_samples', 2])
+        # # PRINTING ONLY
         # for subject, samples_list_name in zip(dataset_sujects, dataset_samples_names_per_subject):
         #     print(dataset_name, ':', subject, ':', samples_list_name)
         # input('Paused... press ENTER')
         # print(dataset_name, '  len(dataset_sujects) after:', len(dataset_sujects), '  len(dataset_samples_names_per_subject) after:', len(dataset_samples_names_per_subject))
+        # # PRINTING ONLY
 
         dataset_descriptors_3D, dataset_labels_gt_str, dataset_labels_gt_int = \
             load_3D_descriptors_from_disk(args.datasets_path, dataset_name, dataset_sujects, dataset_samples_names_per_subject, args.desc_file_ext)
@@ -318,17 +329,18 @@ if __name__ == '__main__':
     # sys.argv += ['-epochs', '100']
     # print('__main__(): sys.argv=', sys.argv)
 
-    sys.argv += ['-model_checkpoint', 'checkpoints/20191028_1000cls_model_best.pth.tar']
-    # sys.argv += ['-cls_checkpoint', 'checkpoints/20191028_1000cls_model_best.pth.tar']
-
     sys.argv += ['-datasets_path', '/home/bjgbiesseck/GitHub/MICA/demo/output']
 
     sys.argv += ['-datasets_names', ['lfw']]
     # sys.argv += ['-datasets_names', ['TALFW']]
     # sys.argv += ['-datasets_names', ['lfw', 'TALFW']]
 
-    sys.argv += ['-desc_file_ext', '*from_OBJ.pt']
+    sys.argv += ['-dataset_size', 'subset']
+    # sys.argv += ['-dataset_size', 'whole']
+
+    # sys.argv += ['-desc_file_ext', '*from_OBJ.pt']
     # sys.argv += ['-desc_file_ext', '*from_PLY.pt']
+    sys.argv += ['-desc_file_ext', '*face_descriptor.pt']   # computed from upsampling point cloud
 
 
     args = parse_args()
