@@ -70,6 +70,7 @@ def parse_args():
         help="Path of dataset root folder containing 3D face reconstructions (OBJ or PLY format)"
     )
     parser.add_argument("-file_ext", type=str, default='.obj', help="file extension to identify correct data to be loaded")
+    parser.add_argument("-dataset_size", type=str, default='whole', help="whole or subset")
     return parser.parse_args()
 
 
@@ -90,6 +91,22 @@ class Tree:
         folders.sort()
         return folders
 
+    # TESTE
+    def get_subsample_lfw_subjects_and_samples_names(self, dir_path):
+        def load_lfw_subsamples():
+            path_file = './lfw_subsamples_folders_with_3_images.txt'
+            with open(path_file) as f:
+                sujects_names = [line.replace('\n', '') for line in f]
+                return sujects_names
+
+        sujects_names = load_lfw_subsamples()
+        sub_folders = []
+        for name in sujects_names:
+            sub_folders += self.get_all_sub_folders(dir_path + '/' + name)
+        return sub_folders
+
+
+
 
 def get_normals(cloud):
     """
@@ -105,8 +122,11 @@ def get_normals(cloud):
     """
     feature = cloud.make_NormalEstimation()
     # feature.set_KSearch(3)   #Use all neighbors in a sphere of radius 3cm
+    # feature.set_KSearch(5)
     # feature.set_KSearch(10)  # Use all neighbors in a sphere of radius 1 cm
-    feature.set_KSearch(50)  # Use all neighbors in a sphere of radius 5 cm
+    feature.set_KSearch(15)
+    # feature.set_KSearch(20)
+    # feature.set_KSearch(50)  # Use all neighbors in a sphere of radius 5 cm
     # feature.set_KSearch(100)  # Use all neighbors in a sphere of radius 10 cm
     normals = feature.compute()
 
@@ -128,15 +148,19 @@ def get_pointcloud_with_normals(cloud):
 def preprocess_pointcloud_with_normals(pc_with_normals):
     point_set = pc_with_normals
     # normalize
-    point_set[:, 0:3] = (point_set[:, 0:3]) / 1         # BERNARDO
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 1         # BERNARDO
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 10      # BERNARDO
-    # point_set[:, 0:3] = (point_set[:, 0:3]) / 100     # original
-    # point_set[:, 0:3] = (point_set[:, 0:3]) / 1000    # BERNARDO
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 100  # original
+    point_set[:, 0:3] = (point_set[:, 0:3]) / 200     # BERNARDO
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 250  # BERNARDO
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 5000    # BERNARDO
+    # point_set[:, 0:-1] = (point_set[:, 0:-1]) / 1000  # BERNARDO
     point_set = torch.from_numpy(point_set)
+    # point_set[:, 6] = torch.pow(point_set[:, 6], 2)
     # point_set[:, 6] = torch.pow(point_set[:, 6], 0.1)
-    # point_set[:, 6] = torch.pow(point_set[:, 6], 0.5)
+    point_set[:, 6] = torch.pow(point_set[:, 6], 0.5)
     # point_set[:, 6] = torch.pow(point_set[:, 6], 1.5)
-    point_set[:, 6] = torch.pow(point_set[:, 6], -1.5)
+    # point_set[:, 6] = torch.pow(point_set[:, 6], -1.5)
     # print('point_set.shape:', point_set.shape)
 
     input = point_set
@@ -234,8 +258,17 @@ def build_Pointnet_model(args):
 def main(args):
     # load dataset (LFW and TALFW)
     print('face_recognition_3d_descriptor.py: main(): Loading sub-folders of dataset', args.dataset_path, '...')
-    sub_folders = Tree().get_all_sub_folders(args.dataset_path)
+
+    if args.dataset_size == 'whole':    # loads whole dataset
+        sub_folders = Tree().get_all_sub_folders(args.dataset_path)   # NORMAL
+        # print('sub_folders:', sub_folders)
+
+    elif args.dataset_size == 'subset':  # loads only a dataset subset for fast tests
+        sub_folders = Tree().get_subsample_lfw_subjects_and_samples_names(args.dataset_path)
+
+    # print('sub_folders:', sub_folders)
     print('len(sub_folders):', len(sub_folders))
+    # sys.exit(0)
 
     model = build_Pointnet_model(args)
 
@@ -243,8 +276,8 @@ def main(args):
     # for i in range(10):  # range(len(sub_folders))
     for i in range(len(sub_folders)):
         sub_folder = sub_folders[i]
-        # print('sub_folder:', sub_folder)
         print('face_recognition_3d_descriptor.py: main(): sub_folder=' + str(i) + '/' + str(len(sub_folders)))
+        print('sub_folder:', sub_folder)
         load_pc_and_compute_normals(args, model, sub_folder)
 
 
@@ -253,12 +286,17 @@ if __name__ == '__main__':
     # sys.argv += ['-epochs', '100']
     # print('__main__(): sys.argv=', sys.argv)
 
+    sys.argv += ['-model_checkpoint', '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/checkpoints/20191028_1000cls_model_best']
+
     sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw']
     # sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/TALFW']
 
-    # sys.argv += ['-file_ext', '.obj']
+    sys.argv += ['-dataset_size', 'subset']
+    # sys.argv += ['-dataset_size', 'whole']
+
+    sys.argv += ['-file_ext', '.obj']
     # sys.argv += ['-file_ext', '.ply']
-    sys.argv += ['-file_ext', '.xyz']    # upsampling point cloud (Meta-PU model)
+    # sys.argv += ['-file_ext', '.xyz']    # upsampling point cloud (Meta-PU model)
 
     args = parse_args()
     # print('__main__(): args=', args)
