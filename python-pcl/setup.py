@@ -154,7 +154,7 @@ if platform.system() == "Windows":
         # Try to find PCL. XXX we should only do this when trying to build or install.
         # in order of preference
         # PCL_SUPPORTED = ["-1.9", "-1.8", "-1.7", "-1.6", ""]         # original
-        PCL_SUPPORTED = ["-1.10", "-1.9", "-1.8", "-1.7", "-1.6", ""]  # BERNARDO
+        PCL_SUPPORTED = ["-1.12", "-1.10", "-1.9", "-1.8", "-1.7", "-1.6", ""]  # BERNARDO
 
         for pcl_version in PCL_SUPPORTED:
             if subprocess.call(['.\\pkg-config\\pkg-config.exe', 'pcl_common%s' % pcl_version]) == 0:
@@ -648,7 +648,7 @@ else:
         os.environ['ARCHFLAGS'] = ''
 
     # Try to find PCL. XXX we should only do this when trying to build or install.
-    PCL_SUPPORTED = ["-1.10", "-1.9", "-1.8", "-1.7", "-1.6", ""]    # in order of preference
+    PCL_SUPPORTED = ["-1.12", "-1.10", "-1.9", "-1.8", "-1.7", "-1.6", ""]    # in order of preference
 
     for pcl_version in PCL_SUPPORTED:
         if subprocess.call(['pkg-config', 'pcl_common%s' % pcl_version]) == 0:
@@ -671,7 +671,7 @@ else:
                     "io", "kdtree", "keypoints", "octree", "outofcore", "people",
                     "recognition", "registration", "sample_consensus", "search",
                     "segmentation", "surface", "tracking", "visualization"]
-    if pcl_version == '-1.10':
+    if pcl_version == '-1.10' or pcl_version == '-1.12':
         pcl_libs = ["features", "kdtree", "people", "search", "visualization",
                     "filters", "keypoints", "segmentation",
                     "2d", "geometry", "ml", "recognition", "stereo", "apps",
