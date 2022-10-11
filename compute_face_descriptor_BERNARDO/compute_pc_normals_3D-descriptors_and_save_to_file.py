@@ -71,6 +71,8 @@ def parse_args():
     )
     parser.add_argument("-file_ext", type=str, default='.obj', help="file extension to identify correct data to be loaded")
     parser.add_argument("-dataset_size", type=str, default='whole', help="whole or subset")
+    parser.add_argument("-crop_face_radius_from_nose_tip", type=float, default='90.0', help="set radius in mm to crop face from tip nose")
+
     return parser.parse_args()
 
 
@@ -124,8 +126,8 @@ def get_normals(cloud):
     # feature.set_KSearch(3)   #Use all neighbors in a sphere of radius 3cm
     # feature.set_KSearch(5)
     # feature.set_KSearch(10)  # Use all neighbors in a sphere of radius 1 cm
-    feature.set_KSearch(15)
-    # feature.set_KSearch(20)
+    # feature.set_KSearch(15)
+    feature.set_KSearch(20)
     # feature.set_KSearch(50)  # Use all neighbors in a sphere of radius 5 cm
     # feature.set_KSearch(100)  # Use all neighbors in a sphere of radius 10 cm
     normals = feature.compute()
@@ -137,12 +139,27 @@ def get_normals(cloud):
 def get_pointcloud_with_normals(cloud):
     # print('cloud:', cloud)
     cloud_with_normals = cloud.to_array()
-    # print('cloud_with_normals:', cloud_with_normals)
     normals = get_normals(cloud)
+    # print('cloud_with_normals:', cloud_with_normals)
+    # print('normals:', normals)
     cloud_with_normals = np.hstack((cloud_with_normals, normals))
     # print('cloud_with_normals.shape:', cloud_with_normals.shape)
     # print('cloud_with_normals:', cloud_with_normals)
     return cloud_with_normals
+
+
+def filter_points_by_radius(cloud, keypoint_ref, radius=90.0):
+    keypoint_ref = np.expand_dims(np.asarray(keypoint_ref, dtype=np.float32), axis=0)
+    # print('keypoint_ref:', keypoint_ref)
+    searchPoint = pcl.PointCloud(keypoint_ref)
+    # print('searchPoint:', searchPoint[0])
+    kdtree = pcl.KdTreeFLANN(cloud)
+    [ind, sqdist] = kdtree.radius_search_for_cloud(searchPoint, radius, cloud.size)
+    # [ind, sqdist] = kdtree.nearest_k_search_for_cloud(searchPoint, 5)
+    ind = ind[0]
+    ind = ind[ind != 0]
+    cloud = pcl.PointCloud(cloud.to_array()[ind])
+    return cloud
 
 
 def preprocess_pointcloud_with_normals(pc_with_normals):
@@ -150,15 +167,16 @@ def preprocess_pointcloud_with_normals(pc_with_normals):
     # normalize
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 1         # BERNARDO
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 10      # BERNARDO
-    # point_set[:, 0:3] = (point_set[:, 0:3]) / 100  # original
-    point_set[:, 0:3] = (point_set[:, 0:3]) / 200     # BERNARDO
+    point_set[:, 0:3] = (point_set[:, 0:3]) / 100  # original
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 200     # BERNARDO
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 250  # BERNARDO
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 5000    # BERNARDO
+    # point_set[:, 0:-1] = (point_set[:, 0:-1]) / 100  # BERNARDO
     # point_set[:, 0:-1] = (point_set[:, 0:-1]) / 1000  # BERNARDO
     point_set = torch.from_numpy(point_set)
     # point_set[:, 6] = torch.pow(point_set[:, 6], 2)
     # point_set[:, 6] = torch.pow(point_set[:, 6], 0.1)
-    point_set[:, 6] = torch.pow(point_set[:, 6], 0.5)
+    # point_set[:, 6] = torch.pow(point_set[:, 6], 0.5)
     # point_set[:, 6] = torch.pow(point_set[:, 6], 1.5)
     # point_set[:, 6] = torch.pow(point_set[:, 6], -1.5)
     # print('point_set.shape:', point_set.shape)
@@ -185,6 +203,10 @@ def load_pc_and_compute_normals(args, model, folder):
         ### cloud_from_PLY = pcl.load(image_path_PLY)
         # print('cloud_from_OBJ.to_array().shape:', cloud_from_OBJ.to_array().shape)
         # print('cloud_from_PLY.to_array().shape:', cloud_from_PLY.to_array().shape)
+
+        path_key_points = '/'.join(image_path_OBJ.split('/')[:-1]) + '/' + 'kpt68.npy'
+        key_points = pcl.load(path_key_points)
+        cloud_from_OBJ = filter_points_by_radius(cloud_from_OBJ, key_points[30], radius=args.crop_face_radius_from_nose_tip)
 
         pc_with_normals_from_OBJ = get_pointcloud_with_normals(cloud_from_OBJ)
         ### pc_with_normals_from_PLY = get_pointcloud_with_normals(cloud_from_PLY)
@@ -294,8 +316,19 @@ if __name__ == '__main__':
     sys.argv += ['-dataset_size', 'subset']
     # sys.argv += ['-dataset_size', 'whole']
 
-    sys.argv += ['-file_ext', '.obj']
-    # sys.argv += ['-file_ext', '.ply']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '7.0']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '10.0']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '20.0']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '30.0']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '40.0']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '50.0']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '90.0']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '120.0']
+    sys.argv += ['-crop_face_radius_from_nose_tip', '150.0']
+    # sys.argv += ['-crop_face_radius_from_nose_tip', '200.0']
+
+    # sys.argv += ['-file_ext', '.obj']
+    sys.argv += ['-file_ext', '.ply']
     # sys.argv += ['-file_ext', '.xyz']    # upsampling point cloud (Meta-PU model)
 
     args = parse_args()

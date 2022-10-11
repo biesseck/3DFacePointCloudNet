@@ -2,6 +2,8 @@ import numpy as np
 import pcl
 import pcl.pcl_visualization
 
+from pcl import NormalEstimation
+
 def load_point_cloud(path_point_cloud):
     cloud = pcl.load(path_point_cloud)
     cloud = np.asarray(cloud)
@@ -118,8 +120,8 @@ def main(path_point_cloud: str, path_key_points: str):
     # radius_search = 3   # 3 mm
     # radius_search = 5   # 5 mm
     # radius_search = 10  # 1 cm
-    # radius_search = 20  # 2 cm
-    radius_search = 50  # 5 cm
+    radius_search = 20  # 2 cm
+    # radius_search = 50  # 5 cm
     # radius_search = 100  # 10 cm
     normals = get_normals(ptcloud_centred, radius_search)
 
@@ -135,6 +137,7 @@ if __name__ == '__main__':
     path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
     # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply'
     # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Adam_Sandler/Adam_Sandler_0001/mesh.obj'
+    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh_upsample_MetaPU.xyz'
 
     path_key_points = None
     path_key_points = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/kpt68.npy'
