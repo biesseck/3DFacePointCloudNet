@@ -671,12 +671,21 @@ else:
                     "io", "kdtree", "keypoints", "octree", "outofcore", "people",
                     "recognition", "registration", "sample_consensus", "search",
                     "segmentation", "surface", "tracking", "visualization"]
-    if pcl_version == '-1.10' or pcl_version == '-1.12':
+    elif pcl_version == '-1.10':
         pcl_libs = ["features", "kdtree", "people", "search", "visualization",
                     "filters", "keypoints", "segmentation",
                     "2d", "geometry", "ml", "recognition", "stereo", "apps",
                     "octree", "registration", "surface",
                     "common", "io", "outofcore", "sample_consensus", "tracking"]
+    elif pcl_version == '-1.12':
+        pcl_libs = ['in_hand_scanner', 'outofcore', 'segmentation',
+                    '2d', 'io', 'people', 'stereo',
+                    'apps', 'kdtree', 'point_cloud_editor', 'surface',
+                    'common', 'keypoints', 'recognition', 'tracking',
+                    'features', 'ml', 'registration', 'visualization',
+                    'filters', 'modeler', 'sample_consensus',
+                    'geometry', 'octree', 'search']
+        
         '''
         pcl_libs = ["features", "kdtree", "people", "search", "visualization",
                     "filters", "keypoints", "point_cloud_editor", "segmentation",
@@ -759,6 +768,10 @@ else:
             vtk_version = '7.1'
             vtk_include_dir = os.path.join('/usr/include/vtk-' + vtk_version)
             vtk_library_dir = os.path.join('/usr/lib')
+        elif pcl_version == '-1.12':
+            vtk_version = '9.1'
+            vtk_include_dir = os.path.join('/usr/include/vtk-' + vtk_version)
+            vtk_library_dir = os.path.join('/usr/lib/x86_64-linux-gnu')
         else:
             pass
 
@@ -786,6 +799,10 @@ else:
         # pcl_version 1.9.1
         # conda or build module, MacOS X
         vtklibreleases = ['vtkalglib-' + vtk_version, 'vtkChartsCore-' + vtk_version, 'vtkCommonColor-' + vtk_version, 'vtkCommonComputationalGeometry-' + vtk_version, 'vtkCommonCore-' + vtk_version, 'vtkCommonDataModel-' + vtk_version, 'vtkCommonExecutionModel-' + vtk_version, 'vtkCommonMath-' + vtk_version, 'vtkCommonMisc-' + vtk_version, 'vtkCommonSystem-' + vtk_version, 'vtkCommonTransforms-' + vtk_version, 'vtkDICOMParser-' + vtk_version, 'vtkDomainsChemistry-' + vtk_version, 'vtkDomainsChemistryOpenGL2-' + vtk_version, 'vtkexoIIc-' + vtk_version, 'vtkFiltersAMR-' + vtk_version, 'vtkFiltersCore-' + vtk_version, 'vtkFiltersExtraction-' + vtk_version, 'vtkFiltersFlowPaths-' + vtk_version, 'vtkFiltersGeneral-' + vtk_version, 'vtkFiltersGeneric-' + vtk_version, 'vtkFiltersGeometry-' + vtk_version, 'vtkFiltersHybrid-' + vtk_version, 'vtkFiltersHyperTree-' + vtk_version, 'vtkFiltersImaging-' + vtk_version, 'vtkFiltersModeling-' + vtk_version, 'vtkFiltersParallel-' + vtk_version, 'vtkFiltersParallelImaging-' + vtk_version, 'vtkFiltersPoints-' + vtk_version, 'vtkFiltersProgrammable-' + vtk_version, 'vtkFiltersPython-' + vtk_version, 'vtkFiltersSelection-' + vtk_version, 'vtkFiltersSMP-' + vtk_version, 'vtkFiltersSources-' + vtk_version, 'vtkFiltersStatistics-' + vtk_version, 'vtkFiltersTexture-' + vtk_version, 'vtkFiltersTopology-' + vtk_version, 'vtkFiltersVerdict-' + vtk_version, 'vtkGeovisCore-' + vtk_version, 'vtkgl2ps-' + vtk_version, 'vtkglew-' + vtk_version, 'vtkImagingColor-' + vtk_version, 'vtkImagingCore-' + vtk_version, 'vtkImagingFourier-' + vtk_version, 'vtkImagingGeneral-' + vtk_version, 'vtkImagingHybrid-' + vtk_version, 'vtkImagingMath-' + vtk_version, 'vtkImagingMorphological-' + vtk_version, 'vtkImagingSources-' + vtk_version, 'vtkImagingStatistics-' + vtk_version, 'vtkImagingStencil-' + vtk_version, 'vtkInfovisCore-' + vtk_version, 'vtkInfovisLayout-' + vtk_version, 'vtkInteractionImage-' + vtk_version, 'vtkInteractionStyle-' + vtk_version, 'vtkInteractionWidgets-' + vtk_version, 'vtkIOAMR-' + vtk_version, 'vtkIOCore-' + vtk_version, 'vtkIOEnSight-' + vtk_version, 'vtkIOExodus-' + vtk_version, 'vtkIOExport-' + vtk_version, 'vtkIOExportOpenGL2-' + vtk_version, 'vtkIOGeometry-' + vtk_version, 'vtkIOImage-' + vtk_version, 'vtkIOImport-' + vtk_version, 'vtkIOInfovis-' + vtk_version, 'vtkIOLegacy-' + vtk_version, 'vtkIOLSDyna-' + vtk_version, 'vtkIOMINC-' + vtk_version, 'vtkIOMovie-' + vtk_version, 'vtkIONetCDF-' + vtk_version, 'vtkIOParallel-' + vtk_version, 'vtkIOParallelXML-' + vtk_version, 'vtkIOPLY-' + vtk_version, 'vtkIOSQL-' + vtk_version, 'vtkIOTecplotTable-' + vtk_version, 'vtkIOVideo-' + vtk_version, 'vtkIOXML-' + vtk_version, 'vtkIOXMLParser-' + vtk_version, 'vtklibharu-' + vtk_version, 'vtkmetaio-' + vtk_version, 'vtknetcdfcpp-' + vtk_version, 'vtkoggtheora-' + vtk_version, 'vtkParallelCore-' + vtk_version, 'vtkproj4-' + vtk_version, 'vtkPythonInterpreter-' + vtk_version, 'vtkRenderingAnnotation-' + vtk_version, 'vtkRenderingContext2D-' + vtk_version, 'vtkRenderingContextOpenGL2-' + vtk_version, 'vtkRenderingCore-' + vtk_version, 'vtkRenderingFreeType-' + vtk_version, 'vtkRenderingGL2PSOpenGL2-' + vtk_version, 'vtkRenderingImage-' + vtk_version, 'vtkRenderingLabel-' + vtk_version, 'vtkRenderingLOD-' + vtk_version, 'vtkRenderingMatplotlib-' + vtk_version, 'vtkRenderingOpenGL2-' + vtk_version, 'vtkRenderingVolume-' + vtk_version, 'vtkRenderingVolumeOpenGL2-' + vtk_version, 'vtksqlite-' + vtk_version, 'vtksys-' + vtk_version, 'vtkverdict-' + vtk_version, 'vtkViewsContext2D-' + vtk_version, 'vtkViewsCore-' + vtk_version, 'vtkViewsInfovis-' + vtk_version, 'vtkWrappingTools-' + vtk_version]
+    
+    # BERNARDO
+    elif vtk_version == '9.1':
+        vtklibreleases = ['vtkfmt-' + vtk_version, 'vtkcgns-' + vtk_version, 'vtkioss-' + vtk_version, 'vtkJava-' + vtk_version, 'vtkIOAMR-' + vtk_version, 'vtkIOHDF-' + vtk_version, 'vtkIOPLY-' + vtk_version, 'vtkIOIOSS-' + vtk_version, 'vtkIOMINC-' + vtk_version, 'vtkIOSegY-' + vtk_version, 'vtkloguru-' + vtk_version, 'vtkIOImage-' + vtk_version, 'vtkIOMovie-' + vtk_version, 'vtkkissfft-' + vtk_version, 'vtkpugixml-' + vtk_version, 'vtkverdict-' + vtk_version, 'vtksys-' + vtk_version, 'vtkIOImport-' + vtk_version, 'vtkIOLegacy-' + vtk_version, 'vtkIOCityGML-' + vtk_version, 'vtkIOVeraOut-' + vtk_version, 'vtkViewsCore-' + vtk_version, 'vtkIOSQL-' + vtk_version, 'vtkIOXML-' + vtk_version, 'vtkChartsCore-' + vtk_version, 'vtkCommonMath-' + vtk_version, 'vtkFiltersAMR-' + vtk_version, 'vtkGeovisCore-' + vtk_version, 'vtkIOGeometry-' + vtk_version, 'vtkIOCore-' + vtk_version, 'vtkmetaio-' + vtk_version, 'vtkCommonColor-' + vtk_version, 'vtkDICOMParser-' + vtk_version, 'vtkFiltersCore-' + vtk_version, 'vtkInfovisCore-' + vtk_version, 'vtkIOChemistry-' + vtk_version, 'vtkIOExportPDF-' + vtk_version, 'vtkParallelDIY-' + vtk_version, 'vtkParallelMPI-' + vtk_version, 'vtkRenderingUI-' + vtk_version, 'vtkIOVideo-' + vtk_version, 'vtklibharu-' + vtk_version, 'vtkGUISupportQt-' + vtk_version, 'vtkImagingColor-' + vtk_version, 'vtkIOCGNSReader-' + vtk_version, 'vtkRenderingLOD-' + vtk_version, 'vtkViewsInfovis-' + vtk_version, 'vtkexodusII-' + vtk_version, 'vtkIOExodus-' + vtk_version, 'vtkIOExport-' + vtk_version, 'vtkIOLSDyna-' + vtk_version, 'vtkIONetCDF-' + vtk_version, 'vtkFiltersPoints-' + vtk_version, 'vtkFiltersPython-' + vtk_version, 'vtkInfovisLayout-' + vtk_version, 'vtkIOExportGL2PS-' + vtk_version, 'vtkIOMPIParallel-' + vtk_version, 'vtkIOParallelXML-' + vtk_version, 'vtkViewsQt-' + vtk_version, 'vtkIOEnSight-' + vtk_version, 'vtkIOInfovis-' + vtk_version, 'vtkFiltersGeneral-' + vtk_version, 'vtkFiltersGeneric-' + vtk_version, 'vtkFiltersImaging-' + vtk_version, 'vtkFiltersSources-' + vtk_version, 'vtkFiltersVerdict-' + vtk_version, 'vtkImagingFourier-' + vtk_version, 'vtkImagingGeneral-' + vtk_version, 'vtkImagingSources-' + vtk_version, 'vtkIOAsynchronous-' + vtk_version, 'vtkParallelMPI4Py-' + vtk_version, 'vtkRenderingImage-' + vtk_version, 'vtkRenderingLabel-' + vtk_version, 'vtkCommonCore-' + vtk_version, 'vtkCommonMisc-' + vtk_version, 'vtkFiltersSMP-' + vtk_version, 'vtkIOMotionFX-' + vtk_version, 'vtkIOMPIImage-' + vtk_version, 'vtkIOParallel-' + vtk_version, 'vtkFiltersGeometry-' + vtk_version, 'vtkFiltersParallel-' + vtk_version, 'vtkPythonContext2D-' + vtk_version, 'vtkRenderingVolume-' + vtk_version, 'vtkImagingCore-' + vtk_version, 'vtkImagingMath-' + vtk_version, 'vtkIOOggTheora-' + vtk_version, 'vtkIOXMLParser-' + vtk_version, 'vtkRenderingQt-' + vtk_version, 'vtkFiltersSelection-' + vtk_version, 'vtkInteractionStyle-' + vtk_version, 'vtkRenderingOpenGL2-' + vtk_version, 'vtkTestingRendering-' + vtk_version, 'vtkCommonPython-' + vtk_version, 'vtkCommonSystem-' + vtk_version, 'vtkParallelCore-' + vtk_version, 'vtkFiltersStatistics-' + vtk_version, 'vtkPythonInterpreter-' + vtk_version, 'vtkRenderingFreeType-' + vtk_version, 'vtkRenderingTk-' + vtk_version, 'vtkFiltersHybrid-' + vtk_version, 'vtkImagingHybrid-' + vtk_version, 'vtkIOCONVERGECFD-' + vtk_version, 'vtkRenderingCore-' + vtk_version, 'vtkFiltersParallelMPI-' + vtk_version, 'vtkInteractionWidgets-' + vtk_version, 'vtkRenderingContext2D-' + vtk_version, 'vtkFiltersTexture-' + vtk_version, 'vtkImagingStencil-' + vtk_version, 'vtkIOTecplotTable-' + vtk_version, 'vtkRenderingVtkJS-' + vtk_version, 'vtkViewsContext2D-' + vtk_version, 'vtkWrappingTools-' + vtk_version, 'vtkCommonDataModel-' + vtk_version, 'vtkFiltersModeling-' + vtk_version, 'vtkFiltersTopology-' + vtk_version, 'vtkCommonExecutionModel-' + vtk_version, 'vtkImagingMorphological-' + vtk_version, 'vtkCommonTransforms-' + vtk_version, 'vtkDomainsChemistry-' + vtk_version, 'vtkFiltersFlowPaths-' + vtk_version, 'vtkFiltersHyperTree-' + vtk_version, 'vtkInteractionImage-' + vtk_version, 'vtkIOParallelNetCDF-' + vtk_version, 'vtkFiltersExtraction-' + vtk_version, 'vtkImagingStatistics-' + vtk_version, 'vtkFiltersParallelImaging-' + vtk_version, 'vtkFiltersParallelVerdict-' + vtk_version, 'vtkRenderingVolumeOpenGL2-' + vtk_version, 'vtkDomainsChemistryOpenGL2-' + vtk_version, 'vtkFiltersParallelGeometry-' + vtk_version, 'vtkRenderingContextOpenGL2-' + vtk_version, 'vtkFiltersProgrammable-' + vtk_version, 'vtkRenderingAnnotation-' + vtk_version, 'vtkRenderingSceneGraph-' + vtk_version, 'vtkDomainsParallelChemistry-' + vtk_version, 'vtkRenderingGL2PSOpenGL2-' + vtk_version, 'vtkWrappingPythonCore3.10-' + vtk_version, 'vtkCommonComputationalGeometry-' + vtk_version]
     else:
         vtklibreleases = []
 
@@ -891,6 +908,13 @@ else:
                   # gdb_debug=True,
                   ]
     elif pcl_version == '-1.10':
+        module = [Extension("pcl._pcl", ["pcl/_pcl_190.pyx", "pcl/minipcl.cpp", "pcl/ProjectInliers.cpp"], language="c++", **ext_args),
+                  Extension("pcl.pcl_visualization", ["pcl/pcl_visualization.pyx"], language="c++", **ext_args),
+                  # Extension("pcl.pcl_grabber", ["pcl/pcl_grabber.pyx", "pcl/grabber_callback.cpp"], language="c++", **ext_args),
+                  # debug
+                  # gdb_debug=True,
+                  ]
+    elif pcl_version == '-1.12':
         module = [Extension("pcl._pcl", ["pcl/_pcl_190.pyx", "pcl/minipcl.cpp", "pcl/ProjectInliers.cpp"], language="c++", **ext_args),
                   Extension("pcl.pcl_visualization", ["pcl/pcl_visualization.pyx"], language="c++", **ext_args),
                   # Extension("pcl.pcl_grabber", ["pcl/pcl_grabber.pyx", "pcl/grabber_callback.cpp"], language="c++", **ext_args),
