@@ -2,9 +2,18 @@
 
 ### Basic setup (Bernardo)
 ```
-# 1) Install the Point Cloud Library (PCL):
-sudo apt install libpcl-dev
+# 1) Install the Point Cloud Library (PCL) 1.10:
+sudo apt install libpcl-dev=1.10.0+dfsg-5ubuntu1
+```
+  
+  &nbsp;&nbsp;&nbsp;&nbsp; *PCL 1.10 isn't officially available for Ubuntu 22.04, so it's necessary to add a Ubuntu 20.04 (focal) repository at the end of "/etc/apt/sources.list":*
+  ```
+      sudo echo -e "\ndeb http://ubuntu.c3sl.ufpr.br/ubuntu/ focal main universe" >> /etc/apt/sources.list
+      sudo apt update
+      sudo apt install libpcl-dev=1.10.0+dfsg-5ubuntu1
+  ```
 
+```
 # 2) Create conda env:
 # conda remove --name bjgbiesseck_3DFacePointCloudNet_py37 --all
 conda create --name bjgbiesseck_3DFacePointCloudNet_py37 python=3.7 && \
