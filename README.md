@@ -20,7 +20,12 @@ python setup.py build_ext --inplace && \
 python setup.py install && \
 pip install -e .
 
-# 4) Download the BFM2017 h5 file `model2017-1_face12_nomouth.h5` (https://faces.dmi.unibas.ch/bfm/bfm2017.html)
+# 4) Compile and install python-pcl
+cd python-pcl && \
+python setup.py build_ext -i && \
+python setup.py install
+
+# 5) Download the BFM2017 h5 file `model2017-1_face12_nomouth.h5` (https://faces.dmi.unibas.ch/bfm/bfm2017.html)
 #    and move into `/Data`.
 ```
 
