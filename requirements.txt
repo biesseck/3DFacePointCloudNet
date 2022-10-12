@@ -14,4 +14,4 @@ statistics
 hydra-core==0.11.3
 pytorch-lightning==0.7.1
 
-./pointnet2_ops_lib/.
+# ./pointnet2_ops_lib/.
