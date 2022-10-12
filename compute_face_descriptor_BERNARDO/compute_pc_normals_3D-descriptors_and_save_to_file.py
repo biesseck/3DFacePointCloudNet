@@ -110,7 +110,7 @@ class Tree:
 
 
 
-def get_normals(cloud):
+def get_normals(cloud, radius=30):
     """
     FROM: https://pcl.gitbook.io/tutorial/part-2/part02-chapter03/part02-chapter03-normal-pcl-python
     The actual *compute* call from the NormalEstimation class does nothing internally but:
@@ -123,14 +123,16 @@ def get_normals(cloud):
     # cloud: pcl._pcl.PointCloud
     """
     feature = cloud.make_NormalEstimation()
-    # feature.set_KSearch(3)   #Use all neighbors in a sphere of radius 3cm
-    # feature.set_KSearch(5)
-    # feature.set_KSearch(10)  # Use all neighbors in a sphere of radius 1 cm
-    # feature.set_KSearch(15)
-    feature.set_KSearch(20)
-    # feature.set_KSearch(50)  # Use all neighbors in a sphere of radius 5 cm
-    # feature.set_KSearch(100)  # Use all neighbors in a sphere of radius 10 cm
+    feature.set_KSearch(radius)    # Use all neighbors in a sphere of radius 5 cm
     normals = feature.compute()
+
+    print('normals:', normals[0])
+    print('normals.to_array():', normals.to_array().shape)
+
+    # normals = normals.to_array()
+    # normals[:,0:3] = normals[:,0:3] * -1
+    # normals = pcl.PointCloud_Normal(normals)  # TESTE
+    normals = pcl.PointCloud_Normal(normals.to_array() * -1)  # TESTE
 
     # return normals            # original
     return normals.to_array()   # BERNARDO
@@ -165,12 +167,14 @@ def filter_points_by_radius(cloud, keypoint_ref, radius=90.0):
 def preprocess_pointcloud_with_normals(pc_with_normals):
     point_set = pc_with_normals
     # normalize
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 0.1  # BERNARDO
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 1         # BERNARDO
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 10      # BERNARDO
     point_set[:, 0:3] = (point_set[:, 0:3]) / 100  # original
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 200     # BERNARDO
     # point_set[:, 0:3] = (point_set[:, 0:3]) / 250  # BERNARDO
-    # point_set[:, 0:3] = (point_set[:, 0:3]) / 5000    # BERNARDO
+    # point_set[:, 0:3] = (point_set[:, 0:3]) / 1000    # BERNARDO
+    # point_set[:, 0:3] = (point_set[:, 3:6]) / 100  # original
     # point_set[:, 0:-1] = (point_set[:, 0:-1]) / 100  # BERNARDO
     # point_set[:, 0:-1] = (point_set[:, 0:-1]) / 1000  # BERNARDO
     point_set = torch.from_numpy(point_set)

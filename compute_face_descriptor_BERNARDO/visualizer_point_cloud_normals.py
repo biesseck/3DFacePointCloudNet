@@ -4,8 +4,8 @@ import pcl.pcl_visualization
 
 def load_point_cloud(path_point_cloud):
     cloud = pcl.load(path_point_cloud)
-    # cloud = np.asarray(cloud)
-    cloud = cloud - np.mean(cloud, 0)
+    cloud = np.asarray(cloud)
+    # cloud = cloud - np.mean(cloud, 0)
     ptcloud_centred = pcl.PointCloud()
     # ptcloud_centred = pcl.PointCloud_PointXYZRGB()
     ptcloud_centred.from_array(cloud)
@@ -42,6 +42,14 @@ def get_normals(cloud, radius=30):
     feature.set_KSearch(radius)    # Use all neighbors in a sphere of radius 5 cm
     normals = feature.compute()
 
+    print('normals:', normals[0])
+    print('normals.to_array():', normals.to_array().shape)
+
+    # normals = normals.to_array()
+    # normals[:,0:3] = normals[:,0:3] * -1
+    # normals = pcl.PointCloud_Normal(normals)  # TESTE
+    normals = pcl.PointCloud_Normal(normals.to_array() * -1)  # TESTE
+
     return normals            # original
     # return normals.to_array()   # BERNARDO
 
@@ -65,7 +73,12 @@ def show_point_cloud_with_normals(cloud, normals):
     # visualize normals
     viewer = pcl.pcl_visualization.PCLVisualizering()
     viewer.SetBackgroundColor(0, 0, 0)
-    viewer.AddPointCloud(cloud, b'cloud')
+    # viewer.AddPointCloud(cloud, b'cloud')
+
+    # pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 255, 255, 255)
+    pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 255, 0, 0)
+    viewer.AddPointCloud_ColorHandler(cloud, pccolor1, b'cloud', 0)
+    viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 3, b'cloud')
 
     # viewer.AddPointCloudNormals(cloud, normals, 10, 0.05, b'normals')
     viewer.AddPointCloudNormals(cloud, normals, 1, 10, b'normals')
@@ -82,7 +95,8 @@ def main(path_point_cloud: str):
     # radius_search = 5   # 5 mm
     # radius_search = 10  # 1 cm
     # radius_search = 20  # 2 cm
-    radius_search = 50  # 5 cm
+    radius_search = 30  # 3 cm
+    # radius_search = 50  # 5 cm
     # radius_search = 100  # 10 cm
     normals = get_normals(ptcloud_centred, radius_search)
 
@@ -93,8 +107,8 @@ def main(path_point_cloud: str):
 
 if __name__ == '__main__':
 
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
-    path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz'
+    path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
+    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply'
+    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz'
 
     main(path_point_cloud)
