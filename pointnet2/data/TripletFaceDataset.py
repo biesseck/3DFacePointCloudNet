@@ -122,9 +122,16 @@ class TripletFaceDataset(data.Dataset):
     
 if __name__ == '__main__':
     print('test')
-    train_dataset = TripletFaceDataset(root = '/home/zzy/m2_500/FRGC_bcnc/fall2003',
+
+    # BERNARDO
+    root_dataset_folder = '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003'
+    ext_file = 'bc'
+
+    # train_dataset = TripletFaceDataset(root = '/home/zzy/m2_500/FRGC_bcnc/fall2003',   # original
+    train_dataset = TripletFaceDataset(root = root_dataset_folder,                       # Bernardo
                     n_triplets = 10000,
                     class_nums = 500,
                     transforms=None,
-                    extensions='bcnc')
+                    extensions=ext_file)     # BERNARDO
+                    # extensions='bcnc')   # original
     print(train_dataset[0][0].shape)
