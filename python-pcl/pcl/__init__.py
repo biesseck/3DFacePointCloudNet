@@ -5,25 +5,58 @@ from ._pcl import *
 
 
 import sys
+import numpy as np
 
 
 def load(path, format=None):
     """Load pointcloud from path.
-
     Currently supports PCD and PLY files.
-
-    Format should be "pcd", "ply", or None to infer from the pathname.
+    Format should be "pcd", "ply", "xyz", or None to infer from the pathname.
     """
-    format = _infer_format(path, format)
-    p = PointCloud()
-    try:
-        loader = getattr(p, "_from_%s_file" % format)
-    except AttributeError:
-        raise ValueError("unknown file format %s" % format)
-    if loader(_encode(path)):
-        raise IOError("error while loading pointcloud from %r (format=%r)"
-                      % (path, format))
+
+    if path.endswith('.xyz'):
+        p = load_XYZ(path)
+    elif path.endswith('.npy'):
+        p = load_NPY(path)
+    else:
+        format = _infer_format(path, format)
+        p = PointCloud()
+        try:
+            loader = getattr(p, "_from_%s_file" % format)
+        except AttributeError:
+            raise ValueError("unknown file format %s" % format)
+        if loader(_encode(path)):
+            raise IOError("error while loading pointcloud from %r (format=%r)"
+                          % (path, format))
     return p
+
+
+def load_NPY(filename):
+    nd_array_npy = np.load(filename)
+    if len(nd_array_npy.shape) == 3:
+        nd_array_npy = nd_array_npy[0]
+    cloud = PointCloud()
+    cloud.from_array(nd_array_npy)
+    return cloud
+
+
+def load_XYZ(filename):
+    with open(filename) as file:
+        all_lines = file.readlines()
+        nd_array_xyz = np.zeros(shape=(len(all_lines),3), dtype='float32')
+        # print('nd_array_xyz.shape:', nd_array_xyz.shape)
+        for i, line in enumerate(all_lines):
+            # print('line:', line[:-1])
+            if not line.startswith('#'):   # ignore comments
+                xyz_values = line[:-1].split(' ')
+                nd_array_xyz[i,0] = float(xyz_values[0])
+                nd_array_xyz[i,1] = float(xyz_values[1])
+                nd_array_xyz[i,2] = float(xyz_values[2])
+                # print('i:', i, '  nd_array_xyz[i]:', nd_array_xyz[i])
+        cloud = PointCloud()
+        cloud.from_array(nd_array_xyz)
+        return cloud
+
 
 
 def load_XYZI(path, format=None):
@@ -156,7 +189,8 @@ def _infer_format(path, format):
     if format is not None:
         return format.lower()
 
-    for candidate in ["pcd", "ply", "obj"]:
+    for candidate in ["pcd", "ply", "obj"]:   # original
+    # for candidate in ["pcd", "ply", "obj", "xyz"]:     # BERNARDO
         if path.endswith("." + candidate):
             return candidate
 
