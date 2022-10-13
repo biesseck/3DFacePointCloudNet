@@ -14,10 +14,14 @@ def load(path, format=None):
     Format should be "pcd", "ply", "xyz", or None to infer from the pathname.
     """
 
-    if path.endswith('.xyz'):
+    if path.endswith('.xyz'):       # Bernardo
         p = load_XYZ(path)
-    elif path.endswith('.npy'):
+    elif path.endswith('.npy'):     # Bernardo
         p = load_NPY(path)
+    elif path.endswith('.abs'):     # Bernardo
+        p = load_ABS(path)
+    elif path.endswith('.abs.gz'):  # Bernardo
+        p = load_ABS_GZ(path)
     else:
         format = _infer_format(path, format)
         p = PointCloud()
@@ -31,6 +35,60 @@ def load(path, format=None):
     return p
 
 
+# BERNARDO
+def load_ABS_GZ(filename):
+    import gzip
+    with gzip.open(filename, 'rb') as f:
+        all_lines = f.read().decode("utf-8").split('\r\n')
+        rows = int(all_lines[0].split(' ')[0])
+        columns = int(all_lines[1].split(' ')[0])
+        # all_lines[2] can be ignored
+        valid_points_indexes = [int(value) for value in all_lines[3].split(' ')[:-1]]
+        valid_points_indexes = np.array(valid_points_indexes)
+        assert rows*columns == valid_points_indexes.shape[0]
+        
+        number_of_valid_points = sum(valid_points_indexes == 1)
+        print('number_of_valid_points:', number_of_valid_points)
+        nd_array_xyz = np.zeros(shape=(number_of_valid_points,3), dtype='float32')
+        j = 0
+        for i, x, y, z in zip(np.arange(0, valid_points_indexes.shape[0]), all_lines[4].split(' '), all_lines[5].split(' '), all_lines[6].split(' ')):
+            if valid_points_indexes[i] == True:
+                nd_array_xyz[j,0] = float(x)
+                nd_array_xyz[j,1] = float(y)
+                nd_array_xyz[j,2] = float(z)
+                j += 1
+        
+        cloud = PointCloud(nd_array_xyz)
+        return cloud
+
+
+# BERNARDO
+def load_ABS(filename):
+    with open(filename) as file:
+        all_lines = file.readlines()
+        rows = int(all_lines[0].split(' ')[0])
+        columns = int(all_lines[1].split(' ')[0])
+        # all_lines[2] can be ignored
+        valid_points_indexes = [int(value) for value in all_lines[3].split(' ')[:-1]]
+        valid_points_indexes = np.array(valid_points_indexes)
+        assert rows*columns == valid_points_indexes.shape[0]
+        
+        number_of_valid_points = sum(valid_points_indexes == 1)
+        print('number_of_valid_points:', number_of_valid_points)
+        nd_array_xyz = np.zeros(shape=(number_of_valid_points,3), dtype='float32')
+        j = 0
+        for i, x, y, z in zip(np.arange(0, valid_points_indexes.shape[0]), all_lines[4].split(' '), all_lines[5].split(' '), all_lines[6].split(' ')):
+            if valid_points_indexes[i] == True:
+                nd_array_xyz[j,0] = float(x)
+                nd_array_xyz[j,1] = float(y)
+                nd_array_xyz[j,2] = float(z)
+                j += 1
+        
+        cloud = PointCloud(nd_array_xyz)
+        return cloud
+
+
+# BERNARDO
 def load_NPY(filename):
     nd_array_npy = np.load(filename)
     if len(nd_array_npy.shape) == 3:
@@ -40,6 +98,7 @@ def load_NPY(filename):
     return cloud
 
 
+# BERNARDO
 def load_XYZ(filename):
     with open(filename) as file:
         all_lines = file.readlines()
@@ -189,7 +248,7 @@ def _infer_format(path, format):
     if format is not None:
         return format.lower()
 
-    for candidate in ["pcd", "ply", "obj"]:   # original
+    for candidate in ["pcd", "ply", "obj"]:              # original
     # for candidate in ["pcd", "ply", "obj", "xyz"]:     # BERNARDO
         if path.endswith("." + candidate):
             return candidate
