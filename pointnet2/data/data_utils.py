@@ -69,9 +69,11 @@ class PointcloudRotate(object):
             return torch.matmul(points, rotation_matrix.t())
         else:
             pc_xyz = points[:, 0:3]
-            pc_normals = points[:, 3:]
+            # pc_normals = points[:, 3:]   # original
+            pc_normals = points[:, 3:6]    # Bernardo
             points[:, 0:3] = torch.matmul(pc_xyz, rotation_matrix.t())
-            points[:, 3:] = torch.matmul(pc_normals, rotation_matrix.t())
+            # points[:, 3:] = torch.matmul(pc_normals, rotation_matrix.t())   # original
+            points[:, 3:6] = torch.matmul(pc_normals, rotation_matrix.t())    # Bernardo
 
             return points
 

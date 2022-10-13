@@ -53,6 +53,9 @@ def parse_args():
     parser.add_argument('--classifier_type', type=str, default='AL',
                     help='Which classifier for train. (MCP, AL, L)')
 
+    # BERNARDO
+    parser.add_argument('--print_freq', type=int, default=100, help='Number of epoch to print partial results')
+
     return parser.parse_args()
 
 lr = 1e-3
@@ -216,6 +219,10 @@ if __name__ == "__main__":
     args = parse_args()
 
     # BERNARDO
+    root_dataset_folder = '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data'
+    ext_file = 'bc'    # syntetically generated using MATLAB
+
+    # BERNARDO
     log_folder = '/'.join(log_file.split('/')[:-1])
     if not osp.exists(log_folder):
         os.makedirs(log_folder)
@@ -231,11 +238,13 @@ if __name__ == "__main__":
             d_utils.PointcloudJitter(std=0.002),
         ]
     )
-    train_dataset = GPMMNormalCurvDataset(root = '',
+    # train_dataset = GPMMNormalCurvDataset(root = '',                  # original
+    train_dataset = GPMMNormalCurvDataset(root = root_dataset_folder,   # BERNARDO
                     class_nums = args.num_class,
                     transforms=transforms,
                     train=True,
-                    extensions='bcnc')
+                    extensions=ext_file)    # BERNARDO
+                    # extensions='bcnc')    # original
     print('Train dataset Length: {}'.format(train_dataset.data_length))
     train_loader = DataLoader(
         train_dataset,
@@ -244,11 +253,13 @@ if __name__ == "__main__":
         num_workers=4,
         pin_memory=True,
     )
-    test_dataset =  GPMMNormalCurvDataset(root = '',
+    # test_dataset =  GPMMNormalCurvDataset(root = '',                  # original
+    test_dataset =  GPMMNormalCurvDataset(root = root_dataset_folder,   # BERNARDO
                     class_nums = args.num_class,
                     transforms=None,
                     train=False,
-                    extensions='bcnc')
+                    extensions=ext_file)    # BERNARDO
+                    # extensions='bcnc')    # original
     print('Eval dataset Length: {}'.format(test_dataset.data_length))
     #print(test_set[0][0].shape)
     test_loader = DataLoader(
