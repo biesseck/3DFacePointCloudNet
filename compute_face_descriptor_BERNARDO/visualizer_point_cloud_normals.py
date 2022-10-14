@@ -32,7 +32,8 @@ def load_point_cloud(path_point_cloud):
     cloud = pcl.load(path_point_cloud)
     cloud = np.asarray(cloud)
     
-    # cloud = cloud - np.mean(cloud, 0)
+    # cloud
+    cloud = cloud - np.mean(cloud, 0)
     cloud = pcl.PointCloud(cloud)
     # ptcloud_centred = pcl.PointCloud_PointXYZRGB()
     return cloud
@@ -148,5 +149,7 @@ if __name__ == '__main__':
     # path_point_cloud = '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz'
 
     args = parse_args()
+    
+    path_point_cloud = args.input_path
 
     main(args, path_point_cloud)

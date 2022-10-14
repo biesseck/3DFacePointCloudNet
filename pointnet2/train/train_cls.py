@@ -35,7 +35,8 @@ def parse_args():
     )
     parser.add_argument("-batch_size", type=int, default=32, help="Batch size")
     parser.add_argument(
-        "-weight_decay", type=float, default=1e-5, help="L2 regularization coeff"
+        # "-weight_decay", type=float, default=1e-5, help="L2 regularization coeff"  # original
+        "-weight_decay", type=float, default=1e-1, help="L2 regularization coeff"    # Bernardo
     )
     parser.add_argument("-lr", type=float, default=1e-3, help="Initial learning rate")
     parser.add_argument(
@@ -48,13 +49,13 @@ def parse_args():
         "-epochs", type=int, default=10, help="Number of epochs to train for"
     )
     # loss Classifier
-    parser.add_argument('--num_class', type=int, default=500,
+    parser.add_argument('-num_class', type=int, default=500,
                     help='number of people(class)')
-    parser.add_argument('--classifier_type', type=str, default='AL',
+    parser.add_argument('-classifier_type', type=str, default='AL',
                     help='Which classifier for train. (MCP, AL, L)')
 
     # BERNARDO
-    parser.add_argument('--print_freq', type=int, default=100, help='Number of epoch to print partial results')
+    parser.add_argument('-print_freq', type=int, default=100, help='Number of epoch to print partial results')
 
     return parser.parse_args()
 
