@@ -168,7 +168,7 @@ def validate(val_loader, model, classifier, criterion):
 
     print('\nTest set: Average loss: {}, Accuracy: ({})\n'.format(losses.avg, top1.avg))
     f.writelines('\nTest set: Average loss: {}, Accuracy: ({})\n'.format(losses.avg, top1.avg))
-
+    
     return top1.avg
 
 def checkpoint_state(model=None,
@@ -322,10 +322,16 @@ if __name__ == "__main__":
         # train for one epoch
         train(train_loader, model, classifier, criterion, optimizer, epoch)
         # evaluate on validation set
-        top1, tpr = validate(test_loader, model, classifier, criterion)
+        # top1, tpr = validate(test_loader, model, classifier, criterion)   # original
+        top1 = validate(test_loader, model, classifier, criterion)          # Bernardo 
+        
         # save the learned parameters
-        is_best = (top1 * tpr) > best_top1
-        best_top1 = max(best_top1, top1 * tpr)
+        # is_best = (top1 * tpr) > best_top1       # original
+        is_best = top1 > best_top1                 # Bernardo
+        
+        # best_top1 = max(best_top1, top1 * tpr)   # original
+        best_top1 = max(best_top1, top1)           # Bernardo
+        
         checkpoint_name = checkpoint_name_ori + str(epoch)
         save_checkpoint(
             checkpoint_state(model, optimizer,
