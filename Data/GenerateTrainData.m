@@ -21,7 +21,7 @@ exp_pcaVariance = h5read('./model2017-1_face12_nomouth.h5',replace(fullfile(exp_
 %% scans for each class: 50
 shapes=10000;
 expressions=50;
-save_folder = './TainData/';
+save_folder = './TrainData/';
 if ~exist(save_folder,'dir') == 1
     mkdir(save_folder);
 end

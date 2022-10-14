@@ -219,7 +219,7 @@ if __name__ == "__main__":
     args = parse_args()
 
     # BERNARDO
-    root_dataset_folder = '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data'
+    root_dataset_folder = '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data/TrainData'
     ext_file = 'bc'    # syntetically generated using MATLAB
 
     # BERNARDO
