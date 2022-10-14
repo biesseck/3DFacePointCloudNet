@@ -59,7 +59,7 @@ def parse_args():
 
     return parser.parse_args()
 
-lr = 1e-3
+# lr = 1e-3     # commented by Bernardo
 log_file = './log/train_log.txt'
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -102,6 +102,7 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch):
         target_var = target_var.view(-1)
         
         output = model(input_var)
+
         if isinstance(classifier, torch.nn.Linear):
             output = classifier(output)
         else:
@@ -283,7 +284,7 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(
        [{'params': model.parameters()}, {'params': classifier.parameters()}], 
-       lr=lr, weight_decay=args.weight_decay
+       lr=args.lr, weight_decay=args.weight_decay
     )
 
     # default value
@@ -322,6 +323,7 @@ if __name__ == "__main__":
         adjust_learning_rate(optimizer, epoch)
         # train for one epoch
         train(train_loader, model, classifier, criterion, optimizer, epoch)
+
         # evaluate on validation set
         # top1, tpr = validate(test_loader, model, classifier, criterion)   # original
         top1 = validate(test_loader, model, classifier, criterion)          # Bernardo 
@@ -340,5 +342,6 @@ if __name__ == "__main__":
             is_best,
             filename=checkpoint_name,
             bestname=best_name)
+
     ## rewrite the training process end
     f.close()

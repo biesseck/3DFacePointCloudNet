@@ -33,7 +33,7 @@ def load_point_cloud(path_point_cloud):
     cloud = np.asarray(cloud)
     
     # cloud
-    cloud = cloud - np.mean(cloud, 0)
+    # cloud = cloud - np.mean(cloud, 0)
     cloud = pcl.PointCloud(cloud)
     # ptcloud_centred = pcl.PointCloud_PointXYZRGB()
     return cloud
@@ -76,10 +76,11 @@ def init_pcl_viewer(args):
     # viewer.addSphere((0, 0, 0), 1, 0.5, 0.5, 0.0, b'sphere')
     # viewer.AddSphere()
 
-    sphere_cloud = generate_random_sphere_point_cloud(n_points=2000, radius=args.sphere_radius)
-    pccolor_sphere = pcl.pcl_visualization.PointCloudColorHandleringCustom(sphere_cloud, 0, 0, 255)
-    viewer.AddPointCloud_ColorHandler(sphere_cloud, pccolor_sphere, b'cloud_sphere', 0)
-    viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 3, b'cloud_sphere')
+    if args.sphere_radius > 0:
+        sphere_cloud = generate_random_sphere_point_cloud(n_points=2000, radius=args.sphere_radius)
+        pccolor_sphere = pcl.pcl_visualization.PointCloudColorHandleringCustom(sphere_cloud, 0, 0, 255)
+        viewer.AddPointCloud_ColorHandler(sphere_cloud, pccolor_sphere, b'cloud_sphere', 0)
+        viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 3, b'cloud_sphere')
 
     return viewer
 

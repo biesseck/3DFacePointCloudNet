@@ -15,20 +15,46 @@ import struct
 import time
 from random import shuffle
 from pointnet2.data import data_utils
+import pcl
 
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
        
+def compute_and_append_normals_curvature(cloud, radius=5):
+    """
+    FROM: https://pcl.gitbook.io/tutorial/part-2/part02-chapter03/part02-chapter03-normal-pcl-python
+    The actual *compute* call from the NormalEstimation class does nothing internally but:
+    for each point p in cloud P
+        1. get the nearest neighbors of p
+        2. compute the surface normal n of p
+        3. check if n is consistently oriented towards the viewpoint and flip otherwise
+
+    # normals: pcl._pcl.PointCloud_Normal,size: 26475
+    # cloud: pcl._pcl.PointCloud
+    """
+    feature = pcl.PointCloud(cloud).make_NormalEstimation()
+    feature.set_KSearch(radius)    # Use all neighbors in a sphere of radius r (cm)
+    normals_curv = feature.compute()
+    normals_curv = normals_curv.to_array()
+    cloud = np.hstack((cloud, normals_curv))
+    return cloud
+
+
 def readbcn(file):
     npoints = os.path.getsize(file) // 4
     with open(file,'rb') as f:
         raw_data = struct.unpack('f'*npoints,f.read(npoints*4))
         data = np.asarray(raw_data,dtype=np.float32)       
 #    data = data.reshape(len(data)//6, 6)
-    data = data.reshape(7, len(data)//7)
+    # data = data.reshape(7, len(data)//7)   # original
+    data = data.reshape(3, len(data)//3).T   # Bernardo
     # translate the nose tip to [0,0,0]
-#    data = (data[:,0:2] - data[8157,0:2]) / 100
-    return torch.from_numpy(data.T)
+#    data = (data[:,0:2] - data[8157,0:2]) / 100   # original
+    # data = (data - data[8157])                   # Bernardo
+    # data = (data - data[8157]) / 100             # Bernardo
+    
+    # return torch.from_numpy(data)    # original
+    return data                        # Bernardo
 
 def has_file_allowed_extension(filename, extensions):
     return filename.lower().endswith(extensions)
@@ -90,7 +116,7 @@ class GPMMNormalCurvDataset(data.Dataset):
     def _find_classes(self, dir, class_nums):
         if sys.version_info >= (3,5):
             # BERNARDO
-            print('GPMM_Normal_Curvature_dataset.py: GPMMNormalCurvDataset: _find_classes(): dir=\''+str(dir)+'\'    class_nums=', class_nums)
+            # print('GPMM_Normal_Curvature_dataset.py: GPMMNormalCurvDataset: _find_classes(): dir=\''+str(dir)+'\'    class_nums=', class_nums)
 
             classes = [d.name for d in os.scandir(dir) if d.is_dir()]
         else:
@@ -103,6 +129,8 @@ class GPMMNormalCurvDataset(data.Dataset):
     def __getitem__(self, index):
         path, target = self.samples[index]
         sample = readbcn(path)
+        sample = compute_and_append_normals_curvature(sample)
+        sample = torch.from_numpy(sample)   # Bernardo
         #resample
         choice = np.random.choice(len(sample), len(sample), replace=False)       
         sample = sample[choice, :]#choice
