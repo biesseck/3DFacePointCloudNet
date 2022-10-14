@@ -22,6 +22,8 @@ def load(path, format=None):
         p = load_ABS(path)
     elif path.endswith('.abs.gz'):  # Bernardo
         p = load_ABS_GZ(path)
+    elif path.endswith('.bc'):      # Bernardo
+        p = load_BC(path)
     else:
         format = _infer_format(path, format)
         p = PointCloud()
@@ -33,6 +35,28 @@ def load(path, format=None):
             raise IOError("error while loading pointcloud from %r (format=%r)"
                           % (path, format))
     return p
+
+
+# BERNARDO
+def load_BC(file):
+    import os
+    import struct
+    npoints = os.path.getsize(file) // 4
+    with open(file,'rb') as f:
+        raw_data = struct.unpack('f'*npoints,f.read(npoints*4))
+        data = np.asarray(raw_data,dtype=np.float32)       
+#    data = data.reshape(len(data)//6, 6)
+#    data = data.reshape(7, len(data)//7)     # original
+    data = data.reshape(3, len(data)//3).T    # Bernardo
+    # print('data:', data.shape)
+    # translate the nose tip to [0,0,0]
+    # data = (data - np.array([0, 0, 100], dtype=np.float32))
+    # data = (data - data[8157]) / 100
+    # print('data[8157]:', data[8157])
+#    data = (data[:,0:2] - data[8157,0:2]) / 100
+    # return torch.from_numpy(data.T)
+    cloud = PointCloud(data)
+    return cloud
 
 
 # BERNARDO
