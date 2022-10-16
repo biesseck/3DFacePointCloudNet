@@ -1,3 +1,9 @@
+python train_cls.py -print_freq 25 -num_class 1000 -classifier_type L -lr 1e-4 -weight_decay 1e-5 -model_checkpoint /home/bjgbiesseck/GitHub/3DFacePointCloudNet/checkpoints/20191028_1000cls_model_best.pth.tar -epochs 100
+
+Train dataset Length: 40800
+Eval dataset Length: 10200
+
+
 pointnet2/data/GPMM_Normal_Curvature_dataset.py
     def compute_and_append_normals_curvature(cloud, radius=100):
     
