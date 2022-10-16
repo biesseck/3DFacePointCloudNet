@@ -3,6 +3,7 @@ import numpy as np
 import pcl
 import pcl.pcl_visualization
 import argparse
+import sys
 
 
 
@@ -11,11 +12,11 @@ def parse_args():
         description="Arguments for visualizing point cloud with normals",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("-show_normals", type=str, default='Y', help="Whether or not to compute and show normals with point cloud")
-    parser.add_argument("-normals_size", type=int, default=10,  help="Normals vectors size")
+    parser.add_argument("-normals_size", type=float, default=10,  help="Normals vectors size")
     parser.add_argument("-input_path", type=str, default='/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj',  help="Input file path")
     parser.add_argument("-points_size", type=int, default=3,  help="Size of points to show")
-    parser.add_argument("-sphere_radius", type=int, default=100,  help="Radius of a sphere for comparison")
+    parser.add_argument("-sphere_radius", type=float, default=100,  help="Radius of a sphere for comparison")
+    parser.add_argument("-coord_system_size", type=float, default=100,  help="Size of X, Y and Z axis")
     return parser.parse_args()
 
 
@@ -29,14 +30,18 @@ def generate_random_sphere_point_cloud(n_points=1000, radius=1.0):
 
 
 def load_point_cloud(path_point_cloud):
-    cloud = pcl.load(path_point_cloud)
-    cloud = np.asarray(cloud)
-    
-    # cloud
+    cloud, normals = pcl.load(path_point_cloud)
+    cloud = cloud.to_array()
     # cloud = cloud - np.mean(cloud, 0)
     cloud = pcl.PointCloud(cloud)
+
+    if not normals is None:
+        # normals = np.asarray(normals)
+        normals = normals.to_array()
+        normals = pcl.PointCloud_Normal(normals)
+    
     # ptcloud_centred = pcl.PointCloud_PointXYZRGB()
-    return cloud
+    return cloud, normals
 
 
 def get_normals(cloud, radius=30):
@@ -71,11 +76,9 @@ def get_normals(cloud, radius=30):
 def init_pcl_viewer(args):
     viewer = pcl.pcl_visualization.PCLVisualizering()
     viewer.SetBackgroundColor(0, 0, 0)
-    viewer.AddCoordinateSystem(100.0)
+    viewer.AddCoordinateSystem(args.coord_system_size)
     viewer.InitCameraParameters()
-    # viewer.addSphere((0, 0, 0), 1, 0.5, 0.5, 0.0, b'sphere')
-    # viewer.AddSphere()
-
+    
     if args.sphere_radius > 0:
         sphere_cloud = generate_random_sphere_point_cloud(n_points=2000, radius=args.sphere_radius)
         pccolor_sphere = pcl.pcl_visualization.PointCloudColorHandleringCustom(sphere_cloud, 0, 0, 255)
@@ -106,30 +109,32 @@ def show_point_cloud_with_normals(args, cloud, normals):
     viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 3, b'cloud')
 
     # add normals
-    viewer.AddPointCloudNormals(cloud, normals, 1, 10, b'normals')
+    # viewer.AddPointCloudNormals(cloud, normals, 1, 10, b'normals')
+    viewer.AddPointCloudNormals(cloud, normals, 1, args.normals_size, b'normals')
 
     viewer.Spin()
 
 
 
-def main(args, path_point_cloud: str):
-    print('Loading point cloud:', path_point_cloud, '...')
-    ptcloud = load_point_cloud(path_point_cloud)
-
-    if args.show_normals.upper() == 'Y':
-        # radius_search = 1   # 1 mm
-        # radius_search = 2   # 2 mm
-        # radius_search = 2.5   # 2.5 mm
-        # radius_search = 3   # 3 mm
-        # radius_search = 5   # 5 mm
-        # radius_search = 10  # 1 cm
-        # radius_search = 20  # 2 cm
-        # radius_search = 30  # 3 cm
-        # radius_search = 50  # 5 cm
-        # radius_search = 100  # 10 cm
-        radius_search = 200  # 20 cm
-        print('Computing normals   radius_search:', radius_search, 'mm...')
-        normals = get_normals(ptcloud, radius_search)
+def main(args):
+    print('Loading point cloud:', args.input_path, '...')
+    ptcloud, normals = load_point_cloud(args.input_path)
+    
+    if args.normals_size > 0:
+        if normals is None:
+            # radius_search = 1   # 1 mm
+            # radius_search = 2   # 2 mm
+            # radius_search = 2.5   # 2.5 mm
+            # radius_search = 3   # 3 mm
+            # radius_search = 5   # 5 mm
+            # radius_search = 10  # 1 cm
+            # radius_search = 20  # 2 cm
+            radius_search = 30  # 3 cm
+            # radius_search = 50  # 5 cm
+            # radius_search = 100  # 10 cm
+            # radius_search = 200  # 20 cm
+            print('Computing normals   radius_search:', radius_search, 'mm...')
+            normals = get_normals(ptcloud, radius_search)
 
         print('Showing point cloud with normals...')
         show_point_cloud_with_normals(args, ptcloud, normals)
@@ -141,19 +146,30 @@ def main(args, path_point_cloud: str):
 
 
 if __name__ == '__main__':
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj'
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply'
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz'
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d550.abs'
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d558.abs'
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz'
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz'
-    # path_point_cloud = '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc'
-    path_point_cloud = '/home/bjgbiesseck_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc'
+    
+    if not '-input_path' in sys.argv:
+        sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz']
+        
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d550.abs']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d558.abs']
+        
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
+        
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000005/000.bc']
 
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0001.txt']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0015.txt']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/person/person_0008.txt']
+        
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/03467517/1ae3b398cea3823b49c212147ab9c105.txt']
+
+        
 
     args = parse_args()
-
-    path_point_cloud = args.input_path
-
-    main(args, path_point_cloud)
+    
+    main(args)

@@ -13,6 +13,7 @@ def load(path, format=None):
     Currently supports PCD and PLY files.
     Format should be "pcd", "ply", "xyz", or None to infer from the pathname.
     """
+    p, n = None, None
 
     if path.endswith('.xyz'):       # Bernardo
         p = load_XYZ(path)
@@ -24,6 +25,8 @@ def load(path, format=None):
         p = load_ABS_GZ(path)
     elif path.endswith('.bc'):      # Bernardo
         p = load_BC(path)
+    elif path.endswith('.txt'):      # Bernardo
+        p, n = load_TXT(path)
     else:
         format = _infer_format(path, format)
         p = PointCloud()
@@ -34,7 +37,72 @@ def load(path, format=None):
         if loader(_encode(path)):
             raise IOError("error while loading pointcloud from %r (format=%r)"
                           % (path, format))
-    return p
+    return p, n
+
+
+# BERNARDO
+def load_TXT(filename):
+    def get_format_info(data: str):
+        if data.endswith('\n'):
+            data = data[:-1]
+        if ', ' in data:
+            separator = ', '
+        elif ',' in data:
+            separator = ','
+        elif ';' in data:
+            separator = ';'
+        elif ' ' in data:
+            separator = ' '
+        number_values = len(data.split(separator))
+        return separator, number_values
+
+    with open(filename) as file:
+        cloud, normals = None, None
+        all_lines = file.readlines()
+        separator, number_values = get_format_info(all_lines[0][:-1])
+        if number_values == 3:   # XYZ (3)
+            nd_array_xyz = np.zeros(shape=(len(all_lines),3), dtype='float32')
+            for i, line in enumerate(all_lines):
+                if not line.startswith('#'):   # ignore comments
+                    xyz_values = line[:-1].split(separator)
+                    nd_array_xyz[i,0] = float(xyz_values[0])
+                    nd_array_xyz[i,1] = float(xyz_values[1])
+                    nd_array_xyz[i,2] = float(xyz_values[2])
+            cloud = PointCloud(nd_array_xyz)
+
+        elif number_values == 6:   # XYZ (3) + Normals (3)
+            nd_array_xyz = np.zeros(shape=(len(all_lines),3), dtype='float32')
+            nd_array_normals = np.zeros(shape=(len(all_lines),4), dtype='float32')
+            for i, line in enumerate(all_lines):
+                if not line.startswith('#'):   # ignore comments
+                    xyz_values = line[:-1].split(separator)
+                    nd_array_xyz[i,0] = float(xyz_values[0])
+                    nd_array_xyz[i,1] = float(xyz_values[1])
+                    nd_array_xyz[i,2] = float(xyz_values[2])
+                    nd_array_normals[i,0] = float(xyz_values[3])
+                    nd_array_normals[i,1] = float(xyz_values[4])
+                    nd_array_normals[i,2] = float(xyz_values[5])
+                    nd_array_normals[i,3] = float(0.0)
+                cloud = PointCloud(nd_array_xyz)
+                normals = PointCloud_Normal(nd_array_normals)
+
+        elif number_values == 7:   # XYZ (3) + Normals (3) + Curv (1)
+            nd_array_xyz = np.zeros(shape=(len(all_lines),3), dtype='float32')
+            nd_array_normals = np.zeros(shape=(len(all_lines),4), dtype='float32')
+            for i, line in enumerate(all_lines):
+                if not line.startswith('#'):   # ignore comments
+                    xyz_values = line[:-1].split(separator)
+                    nd_array_xyz[i,0] = float(xyz_values[0])
+                    nd_array_xyz[i,1] = float(xyz_values[1])
+                    nd_array_xyz[i,2] = float(xyz_values[2])
+                    nd_array_normals[i,0] = float(xyz_values[3])
+                    nd_array_normals[i,1] = float(xyz_values[4])
+                    nd_array_normals[i,2] = float(xyz_values[5])
+                    nd_array_normals[i,3] = float(xyz_values[6])
+                cloud = PointCloud(nd_array_xyz)
+                normals = PointCloud_Normal(nd_array_normals)
+
+        return cloud, normals
 
 
 # BERNARDO
