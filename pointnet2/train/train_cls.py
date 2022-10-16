@@ -10,7 +10,11 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import transforms
-import etw_pytorch_utils as pt_utils
+
+# import etw_pytorch_utils as pt_utils                   # original
+import etw_pytorch_utils.etw_pytorch_utils as pt_utils   # BERNARDO
+
+
 import os.path as osp
 import os
 import argparse
@@ -148,24 +152,27 @@ def validate(val_loader, model, classifier, criterion):
     # switch to evaluate mode
     model.eval()
     for i, (input, target) in enumerate(val_loader):
-        input      = input.cuda()
-        target     = target.cuda()
-        input_var  = torch.autograd.Variable(input, volatile=True)
-        target_var = torch.autograd.Variable(target, volatile=True)
-        target_var = target_var.view(-1)
-        # compute output
-        output = model(input_var)
-        if isinstance(classifier, torch.nn.Linear):
-            output = classifier(output)
-        else:
-            output = classifier(output, target)
-        
-        loss   = criterion(output, target_var)
-        # measure accuracy and record loss
-        _, classes = torch.max(output, -1)
-        acc = (classes == target_var).float().sum() / target_var.numel()
-        losses.update(loss.item(), input.size(0))
-        top1.update(acc, input.size(0))
+        with torch.no_grad():    # Bernardo
+            input      = input.cuda()
+            target     = target.cuda()
+            # input_var  = torch.autograd.Variable(input, volatile=True)   # original
+            # target_var = torch.autograd.Variable(target, volatile=True)  # original
+            input_var  = torch.autograd.Variable(input)                    # Bernardo
+            target_var = torch.autograd.Variable(target)                   # Bernardo
+            target_var = target_var.view(-1)
+            # compute output
+            output = model(input_var)
+            if isinstance(classifier, torch.nn.Linear):
+                output = classifier(output)
+            else:
+                output = classifier(output, target)
+
+            loss   = criterion(output, target_var)
+            # measure accuracy and record loss
+            _, classes = torch.max(output, -1)
+            acc = (classes == target_var).float().sum() / target_var.numel()
+            losses.update(loss.item(), input.size(0))
+            top1.update(acc, input.size(0))
 
 
     print('\nTest set: Average loss: {}, Accuracy: ({})\n'.format(losses.avg, top1.avg))
