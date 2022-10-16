@@ -29,9 +29,12 @@ def generate_random_sphere_point_cloud(n_points=1000, radius=1.0):
     return sphere_cloud
 
 
+
 def load_point_cloud(path_point_cloud):
     cloud, normals = pcl.load(path_point_cloud)
     cloud = cloud.to_array()
+    # cloud -= np.array([0., 0., -100.], dtype=np.float32)
+    # cloud /= 100
     # cloud = cloud - np.mean(cloud, 0)
     cloud = pcl.PointCloud(cloud)
 
@@ -42,6 +45,23 @@ def load_point_cloud(path_point_cloud):
     
     # ptcloud_centred = pcl.PointCloud_PointXYZRGB()
     return cloud, normals
+
+
+
+def get_normals_via_integral_image(cloud, radius=30):
+    # cloud = pcl.PointCloud(cloud.to_array() / 100)
+    ne = cloud.make_IntegralImageNormalEstimation()
+
+    ne.set_NormalEstimation_Method_AVERAGE_3D_GRADIENT()
+    # ne.set_NormalEstimation_Method_COVARIANCE_MATRIX()
+    # ne.set_NormalEstimation_Method_AVERAGE_DEPTH_CHANGE()
+    # ne.set_NormalEstimation_Method_SIMPLE_3D_GRADIENT()
+
+    ne.set_MaxDepthChange_Factor(0.02)
+    ne.set_NormalSmoothingSize(1.0)
+    normals = ne.compute()
+    return normals
+
 
 
 def get_normals(cloud, radius=30):
@@ -56,6 +76,10 @@ def get_normals(cloud, radius=30):
     # normals: pcl._pcl.PointCloud_Normal,size: 26475
     # cloud: pcl._pcl.PointCloud
     """
+
+    # TESTE
+    # cloud = pcl.PointCloud(cloud.to_array() - np.array([0., 0., -100.], dtype=np.float32))
+
     feature = cloud.make_NormalEstimation()
     feature.set_KSearch(radius)    # Use all neighbors in a sphere of radius 5 cm
     normals = feature.compute()
@@ -135,6 +159,7 @@ def main(args):
             # radius_search = 200  # 20 cm
             print('Computing normals   radius_search:', radius_search, 'mm...')
             normals = get_normals(ptcloud, radius_search)
+            # normals = get_normals_via_integral_image(ptcloud, radius=30)
 
         print('Showing point cloud with normals...')
         show_point_cloud_with_normals(args, ptcloud, normals)
@@ -148,7 +173,7 @@ def main(args):
 if __name__ == '__main__':
     
     if not '-input_path' in sys.argv:
-        sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz']
         
@@ -158,7 +183,7 @@ if __name__ == '__main__':
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
         
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
+        sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000005/000.bc']
 
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0001.txt']
