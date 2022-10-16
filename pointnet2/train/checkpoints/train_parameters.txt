@@ -1,0 +1,39 @@
+pointnet2/data/GPMM_Normal_Curvature_dataset.py
+    def compute_and_append_normals_curvature(cloud, radius=100):
+    
+    def __getitem__(self, index):
+        sample[:,0:3] = (sample[:,0:3])/(100)
+        sample[:,6] = torch.pow(sample[:,6],0.1)
+
+
+
+pointnet2/models/pointnet2_ssg_face.py
+    class Pointnet2SSG(nn.Module):
+        self.SA_modules.append(
+            PointnetSAModule1(
+                npoint=2048,
+                radius=0.1,      # Bernardo
+                nsample=64,
+                mlp=[input_channels, 32, 32],
+                use_xyz=use_xyz,
+            )
+        )
+        self.SA_modules.append(
+            PointnetSAModule1(
+                npoint=512,
+                radius=1.2,      # Bernardo
+                nsample=64,
+                mlp=[32, 64, 64],
+                use_xyz=use_xyz,
+            )
+        )
+
+
+
+
+pointnet2/train/layer.py
+    class MarginCosineProduct(nn.Module):
+        def __init__(self, in_features, out_features, s=1.0, m=0.40)
+
+
+
