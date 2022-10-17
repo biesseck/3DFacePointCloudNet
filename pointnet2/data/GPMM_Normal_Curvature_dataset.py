@@ -20,7 +20,7 @@ import pcl
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
        
-def compute_and_append_normals_curvature(cloud, radius=5):
+def compute_and_append_normals_curvature(cloud, k_neighbours=30):
     """
     FROM: https://pcl.gitbook.io/tutorial/part-2/part02-chapter03/part02-chapter03-normal-pcl-python
     The actual *compute* call from the NormalEstimation class does nothing internally but:
@@ -33,7 +33,7 @@ def compute_and_append_normals_curvature(cloud, radius=5):
     # cloud: pcl._pcl.PointCloud
     """
     feature = pcl.PointCloud(cloud).make_NormalEstimation()
-    feature.set_KSearch(radius)    # Use all neighbors in a sphere of radius r (cm)
+    feature.set_KSearch(k_neighbours)
     normals_curv = feature.compute()
     normals_curv = normals_curv.to_array()
     cloud = np.hstack((cloud, normals_curv))
@@ -48,6 +48,7 @@ def readbcn(file):
 #    data = data.reshape(len(data)//6, 6)
     # data = data.reshape(7, len(data)//7)   # original
     data = data.reshape(3, len(data)//3).T   # Bernardo
+    # data = data - np.mean(data, 0)
     # translate the nose tip to [0,0,0]
 #    data = (data[:,0:2] - data[8157,0:2]) / 100   # original
     # data = (data - data[8157])                   # Bernardo
@@ -129,14 +130,13 @@ class GPMMNormalCurvDataset(data.Dataset):
     def __getitem__(self, index):
         path, target = self.samples[index]
         sample = readbcn(path)
+        sample[:,0:3] = (sample[:,0:3])/(100)
         sample = compute_and_append_normals_curvature(sample)
+        sample[:,6] = np.power(sample[:,6],0.1)
         sample = torch.from_numpy(sample)   # Bernardo
         #resample
         choice = np.random.choice(len(sample), len(sample), replace=False)       
         sample = sample[choice, :]#choice
-        
-        sample[:,0:3] = (sample[:,0:3])/(100)
-        sample[:,6] = torch.pow(sample[:,6],0.1)
 #        sample[:,6] = (sample[:,6] - min(sample[:,6]))/(max(sample[:,6]) - min(sample[:,6]))
         if self.transforms is not None:
             point_set = self.transforms(sample)
