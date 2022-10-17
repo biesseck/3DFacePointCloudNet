@@ -33,6 +33,7 @@ def generate_random_sphere_point_cloud(n_points=1000, radius=1.0):
 def load_point_cloud(path_point_cloud):
     cloud, normals = pcl.load(path_point_cloud)
     cloud = cloud.to_array()
+    print('load_point_cloud(): cloud =', cloud[0])
     # cloud -= np.array([0., 0., -100.], dtype=np.float32)
     # cloud /= 100
     # cloud = cloud - np.mean(cloud, 0)
@@ -100,8 +101,10 @@ def get_normals(cloud, radius=30):
 def init_pcl_viewer(args):
     viewer = pcl.pcl_visualization.PCLVisualizering()
     viewer.SetBackgroundColor(0, 0, 0)
-    viewer.AddCoordinateSystem(args.coord_system_size)
-    viewer.InitCameraParameters()
+    
+    if args.coord_system_size > 0:
+        viewer.AddCoordinateSystem(args.coord_system_size)
+        # viewer.InitCameraParameters()
     
     if args.sphere_radius > 0:
         sphere_cloud = generate_random_sphere_point_cloud(n_points=2000, radius=args.sphere_radius)
@@ -183,14 +186,14 @@ if __name__ == '__main__':
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
         
-        sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000005/000.bc']
 
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0001.txt']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0015.txt']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/person/person_0008.txt']
         
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
+        sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/03467517/1ae3b398cea3823b49c212147ab9c105.txt']
 
         
