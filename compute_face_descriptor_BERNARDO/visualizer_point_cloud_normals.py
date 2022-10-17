@@ -65,7 +65,7 @@ def get_normals_via_integral_image(cloud, radius=30):
 
 
 
-def get_normals(cloud, radius=30):
+def get_normals(cloud, k_neighbours=30, radius=30):
     """
     FROM: https://pcl.gitbook.io/tutorial/part-2/part02-chapter03/part02-chapter03-normal-pcl-python
     The actual *compute* call from the NormalEstimation class does nothing internally but:
@@ -77,12 +77,11 @@ def get_normals(cloud, radius=30):
     # normals: pcl._pcl.PointCloud_Normal,size: 26475
     # cloud: pcl._pcl.PointCloud
     """
-
-    # TESTE
-    # cloud = pcl.PointCloud(cloud.to_array() - np.array([0., 0., -100.], dtype=np.float32))
-
     feature = cloud.make_NormalEstimation()
-    feature.set_KSearch(radius)    # Use all neighbors in a sphere of radius 5 cm
+    if k_neighbours > 0:
+        feature.set_KSearch(k_neighbours)
+    else:
+        feature.set_RadiusSearch(radius)
     normals = feature.compute()
     normals = normals.to_array()
 
@@ -149,19 +148,19 @@ def main(args):
     
     if args.normals_size > 0:
         if normals is None:
-            # radius_search = 1   # 1 mm
-            # radius_search = 2   # 2 mm
-            # radius_search = 2.5   # 2.5 mm
-            # radius_search = 3   # 3 mm
-            # radius_search = 5   # 5 mm
-            # radius_search = 10  # 1 cm
-            # radius_search = 20  # 2 cm
-            radius_search = 30  # 3 cm
-            # radius_search = 50  # 5 cm
-            # radius_search = 100  # 10 cm
-            # radius_search = 200  # 20 cm
-            print('Computing normals   radius_search:', radius_search, 'mm...')
-            normals = get_normals(ptcloud, radius_search)
+            # k_neighbours = 1
+            # k_neighbours = 2
+            # k_neighbours = 2
+            # k_neighbours = 3
+            # k_neighbours = 5
+            # k_neighbours = 10
+            # k_neighbours = 20
+            k_neighbours = 30
+            # k_neighbours = 50
+            # k_neighbours = 100
+            # k_neighbours = 200
+            print('Computing normals   k_neighbours:', k_neighbours, '...')
+            normals = get_normals(ptcloud, k_neighbours)
             # normals = get_normals_via_integral_image(ptcloud, radius=30)
 
         print('Showing point cloud with normals...')
@@ -186,14 +185,14 @@ if __name__ == '__main__':
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
         
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
+        sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000005/000.bc']
 
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0001.txt']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0015.txt']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/person/person_0008.txt']
         
-        sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
         # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/03467517/1ae3b398cea3823b49c212147ab9c105.txt']
 
         
