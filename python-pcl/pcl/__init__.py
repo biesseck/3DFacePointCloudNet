@@ -86,9 +86,10 @@ def load_TXT(filename):
                 cloud = PointCloud(nd_array_xyz)
                 normals = PointCloud_Normal(nd_array_normals)
 
-        elif number_values == 7:   # XYZ (3) + Normals (3) + Curv (1)
+        elif number_values == 7:   # XYZ (3) + Normals (3) + PixelLabel (1)
             nd_array_xyz = np.zeros(shape=(len(all_lines),3), dtype='float32')
             nd_array_normals = np.zeros(shape=(len(all_lines),4), dtype='float32')
+            nd_array_pixel_label = np.zeros(shape=(len(all_lines),1), dtype='float32')
             for i, line in enumerate(all_lines):
                 if not line.startswith('#'):   # ignore comments
                     xyz_values = line[:-1].split(separator)
@@ -98,10 +99,12 @@ def load_TXT(filename):
                     nd_array_normals[i,0] = float(xyz_values[3])
                     nd_array_normals[i,1] = float(xyz_values[4])
                     nd_array_normals[i,2] = float(xyz_values[5])
-                    nd_array_normals[i,3] = float(xyz_values[6])
+                    nd_array_normals[i,3] = float(0.0)
+                    nd_array_pixel_label[i] = float(xyz_values[6])
                 cloud = PointCloud(nd_array_xyz)
                 normals = PointCloud_Normal(nd_array_normals)
 
+        # return cloud, normals, nd_array_pixel_label
         return cloud, normals
 
 
