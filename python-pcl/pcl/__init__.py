@@ -138,23 +138,17 @@ def load_ABS_GZ(filename):
         rows = int(all_lines[0].split(' ')[0])
         columns = int(all_lines[1].split(' ')[0])
         # all_lines[2] can be ignored
-        valid_points_indexes = [int(value) for value in all_lines[3].split(' ')[:-1]]
-        valid_points_indexes = np.array(valid_points_indexes)
-        assert rows*columns == valid_points_indexes.shape[0]
         
-        number_of_valid_points = sum(valid_points_indexes == 1)
-        print('number_of_valid_points:', number_of_valid_points)
-        nd_array_xyz = np.zeros(shape=(number_of_valid_points,3), dtype='float32')
-        j = 0
-        for i, x, y, z in zip(np.arange(0, valid_points_indexes.shape[0]), all_lines[4].split(' '), all_lines[5].split(' '), all_lines[6].split(' ')):
-            if valid_points_indexes[i] == True:
-                nd_array_xyz[j,0] = float(x)
-                nd_array_xyz[j,1] = float(y)
-                nd_array_xyz[j,2] = float(z)
-                j += 1
+        nd_array_xyz = np.zeros(shape=(rows*columns,3), dtype='float32')
+        for i, valid, x, y, z in zip(np.arange(0, nd_array_xyz.shape[0]), all_lines[3].split(' '), all_lines[4].split(' '), all_lines[5].split(' '), all_lines[6].split(' ')):
+            # valid = int(valid)
+            nd_array_xyz[i,0] = float(x)
+            nd_array_xyz[i,1] = float(y)
+            nd_array_xyz[i,2] = float(z)
         
         cloud = PointCloud(nd_array_xyz)
         return cloud
+
 
 
 # BERNARDO
