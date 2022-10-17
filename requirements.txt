@@ -11,6 +11,7 @@ tqdm
 future
 statistics
 opencv-python
+tensorflow
 keras
 mtcnn
 
