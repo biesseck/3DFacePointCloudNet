@@ -183,6 +183,7 @@ def main_normalize(args):
         path_centralized_ptcloud = '/'.join(pc_path.split('/')[:-1]) + '/' + pc_path.split('/')[-1].split('.')[0] + args.output_pc_ext
         print('Saving centralized point cloud:', path_centralized_ptcloud)
         pcl.save(ptcloud_centralized, path_centralized_ptcloud, format=args.output_pc_ext.split('.')[1], binary=False)
+        print('-----------------------------------------\n')
         # sys.exit(0)
 
 
@@ -190,7 +191,8 @@ def main_normalize(args):
 
 if __name__ == '__main__':
     
-    sys.argv += ['-dataset_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1']
+    if not '-dataset_path' in sys.argv:
+        sys.argv += ['-dataset_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1']
 
     sys.argv += ['-input_img_ext', '*.ppm']
     sys.argv += ['-input_pc_ext', '*.abs.gz']
