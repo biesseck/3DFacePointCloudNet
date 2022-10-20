@@ -13,10 +13,11 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-normals_size", type=float, default=10,  help="Normals vectors size")
-    parser.add_argument("-input_path", type=str, default='/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj',  help="Input file path")
+    parser.add_argument("-input_path", type=str, default='/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj',  help="Input file path")
     parser.add_argument("-points_size", type=int, default=3,  help="Size of points to show")
     parser.add_argument("-sphere_radius", type=float, default=100,  help="Radius of a sphere for comparison")
     parser.add_argument("-coord_system_size", type=float, default=100,  help="Size of X, Y and Z axis")
+    parser.add_argument("-filter_radius", type=float, default=90.0,  help="Radius of sphere to filter points")
     return parser.parse_args()
 
 
@@ -27,7 +28,6 @@ def generate_random_sphere_point_cloud(n_points=1000, radius=1.0):
         xyz_values[i] *= radius
     sphere_cloud = pcl.PointCloud(xyz_values)
     return sphere_cloud
-
 
 
 def load_point_cloud(path_point_cloud):
@@ -48,7 +48,6 @@ def load_point_cloud(path_point_cloud):
     return cloud, normals
 
 
-
 def get_normals_via_integral_image(cloud, radius=30):
     # cloud = pcl.PointCloud(cloud.to_array() / 100)
     ne = cloud.make_IntegralImageNormalEstimation()
@@ -64,7 +63,6 @@ def get_normals_via_integral_image(cloud, radius=30):
     return normals
 
 
-
 def get_normals(cloud, k_neighbours=30, radius=30):
     """
     FROM: https://pcl.gitbook.io/tutorial/part-2/part02-chapter03/part02-chapter03-normal-pcl-python
@@ -77,6 +75,10 @@ def get_normals(cloud, k_neighbours=30, radius=30):
     # normals: pcl._pcl.PointCloud_Normal,size: 26475
     # cloud: pcl._pcl.PointCloud
     """
+    cloud_array = cloud.to_array()
+    cloud_array += np.array([0., 0., -100])
+    cloud = pcl.PointCloud(cloud_array)
+
     feature = cloud.make_NormalEstimation()
     if k_neighbours > 0:
         feature.set_KSearch(k_neighbours)
@@ -95,6 +97,20 @@ def get_normals(cloud, k_neighbours=30, radius=30):
     normals = pcl.PointCloud_Normal(normals)
     return normals                # original
     # return normals.to_array()   # BERNARDO
+
+
+def filter_points_by_radius(cloud, keypoint_ref, radius=90.0):
+    keypoint_ref = np.expand_dims(np.asarray(keypoint_ref, dtype=np.float32), axis=0)
+    # print('keypoint_ref:', keypoint_ref)
+    searchPoint = pcl.PointCloud(keypoint_ref)
+    # print('searchPoint:', searchPoint[0])
+    kdtree = pcl.KdTreeFLANN(cloud)
+    [ind, sqdist] = kdtree.radius_search_for_cloud(searchPoint, radius, cloud.size)
+    # [ind, sqdist] = kdtree.nearest_k_search_for_cloud(searchPoint, 5)
+    ind = ind[0]
+    ind = ind[ind != 0]
+    cloud = pcl.PointCloud(cloud.to_array()[ind])
+    return cloud
 
 
 def init_pcl_viewer(args):
@@ -145,6 +161,9 @@ def show_point_cloud_with_normals(args, cloud, normals):
 def main(args):
     print('Loading point cloud:', args.input_path, '...')
     ptcloud, normals = load_point_cloud(args.input_path)
+
+    if args.filter_radius > 0:
+        ptcloud = filter_points_by_radius(ptcloud, [0., 0., 0.], radius=args.filter_radius)
     
     if args.normals_size > 0:
         if normals is None:
@@ -173,30 +192,30 @@ def main(args):
 
 
 if __name__ == '__main__':
-    
+
     if not '-input_path' in sys.argv:
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz']
-        
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d550.abs']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d558.abs']
-        
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
-        
-        sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/GitHub/3DFacePointCloudNet/Data/TrainData/400000005/000.bc']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz']
 
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0001.txt']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/airplane/airplane_0015.txt']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/modelnet40_normal_resampled/person/person_0008.txt']
-        
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck_home_duo/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/03467517/1ae3b398cea3823b49c212147ab9c105.txt']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d550.abs']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d558.abs']
 
-        
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
+
+        sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data/TrainData/400000005/000.bc']
+
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/modelnet40_normal_resampled/airplane/airplane_0001.txt']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/modelnet40_normal_resampled/airplane/airplane_0015.txt']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/modelnet40_normal_resampled/person/person_0008.txt']
+
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/03467517/1ae3b398cea3823b49c212147ab9c105.txt']
+
+
 
     args = parse_args()
-    
+
     main(args)

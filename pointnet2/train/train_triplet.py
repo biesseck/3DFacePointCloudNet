@@ -97,7 +97,7 @@ def parse_args():
 lr = 1e-3
 #lr_clip = 1e-5
 #bnm_clip = 1e-2
-log_file = './log/triplet_log.txt'
+log_file = './log_triplet/triplet_log.txt'
 class CosineDistance(Function):
     def __init__(self, p):
         super(CosineDistance, self).__init__()
@@ -341,8 +341,21 @@ def get_list(folder):
             class_list.append(cname)
     return pt_list, class_list
 
+
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
     args = parse_args()
+
+    # BERNARDO
+    root_dataset_folder = '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range'
 
     # BERNARDO
     log_folder = '/'.join(log_file.split('/')[:-1])
@@ -358,7 +371,8 @@ if __name__ == "__main__":
             d_utils.PointcloudJitter(std=0.002),
         ]
     )
-    train_dataset = TripletFaceDataset(root = '',
+    # train_dataset = TripletFaceDataset(root = '',                   # original
+    train_dataset = TripletFaceDataset(root = root_dataset_folder,    # Bernardo
                     n_triplets = args.num_triplet,
                     n_points = args.num_points,
                     class_nums = 500,
