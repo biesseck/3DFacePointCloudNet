@@ -131,6 +131,14 @@ class GPMMNormalCurvDataset(data.Dataset):
         path, target = self.samples[index]
         sample = readbcn(path)
         sample[:,0:3] = (sample[:,0:3])/(100)
+
+        # TEST FROM POINTNET++
+        sample[:,0:3] = (sample[:,0:3] - sample[:,0:3].min()) / (sample[:,0:3].max() - sample[:,0:3].min())
+        centroid = np.mean(sample[:,0:3], axis=0)
+        sample[:,0:3] = sample[:,0:3] - centroid
+        m = np.max(np.sqrt(np.sum(sample[:,0:3]**2, axis=1)))
+        sample[:,0:3] = sample[:,0:3] / m
+
         sample = compute_and_append_normals_curvature(sample)
         sample[:,6] = np.power(sample[:,6],0.1)
         sample = torch.from_numpy(sample)   # Bernardo
