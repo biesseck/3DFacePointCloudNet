@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument("-points_size", type=int, default=3,  help="Size of points to show")
     parser.add_argument("-sphere_radius", type=float, default=100,  help="Radius of a sphere for comparison")
     parser.add_argument("-coord_system_size", type=float, default=100,  help="Size of X, Y and Z axis")
-    parser.add_argument("-filter_radius", type=float, default=90.0,  help="Radius of sphere to filter points")
+    parser.add_argument("-filter_radius", type=float, default=0.0,  help="Radius of sphere to filter points")
     return parser.parse_args()
 
 
@@ -31,12 +31,13 @@ def generate_random_sphere_point_cloud(n_points=1000, radius=1.0):
 
 
 def load_point_cloud(path_point_cloud):
-    cloud, normals = pcl.load(path_point_cloud)
+    cloud, normals = pcl.load(path_point_cloud, only_valid_points=True)
     cloud = cloud.to_array()
-    print('load_point_cloud(): cloud =', cloud[0])
+    print('cloud.shape:', cloud.shape)
+    print('load_point_cloud(): cloud =', cloud)
     # cloud -= np.array([0., 0., -100.], dtype=np.float32)
     # cloud /= 100
-    # cloud = cloud - np.mean(cloud, 0)
+    cloud = cloud - np.mean(cloud, 0)
     cloud = pcl.PointCloud(cloud)
 
     if not normals is None:
@@ -87,9 +88,9 @@ def get_normals(cloud, k_neighbours=30, radius=30):
     normals = feature.compute()
     normals = normals.to_array()
 
-    print('normals (x, y, z) + curvature:', normals[0])
     print('normals.to_array():', normals.shape)
-
+    print('normals (x, y, z) + curvature:', normals[0])
+    
     # normals[:,0:3] = normals[:,0:3] * -1    # invert only normal vectors
     # normals[:,3] = normals[:,3] * -1        # invert only curvature
     # normals *= -1                           # invert all components (normals and curvature)
@@ -202,9 +203,9 @@ if __name__ == '__main__':
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d558.abs']
 
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz']
-        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
+        sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
 
-        sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
         # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data/TrainData/400000005/000.bc']
 
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/modelnet40_normal_resampled/airplane/airplane_0001.txt']

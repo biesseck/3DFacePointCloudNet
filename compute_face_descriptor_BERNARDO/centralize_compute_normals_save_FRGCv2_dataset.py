@@ -310,8 +310,12 @@ def main_centralize_nosetip_with_normals(args):
             # print('ptcloud_centralized_with_normals[1000:1100]:', ptcloud_centralized_with_normals[1000:1100])
             
             path_centralized_ptcloud = '/'.join(pc_path.split('/')[:-1]) + '/' + pc_path.split('/')[-1].split('.')[0] + args.output_pc_ext
-            print('Saving centralized point cloud:', path_centralized_ptcloud)
+            print('Saving centralized point cloud (text):', path_centralized_ptcloud)
             np.savetxt(path_centralized_ptcloud, ptcloud_centralized_with_normals_array, newline="\r\n")
+            
+            path_centralized_ptcloud_bin = '/'.join(pc_path.split('/')[:-1]) + '/' + pc_path.split('/')[-1].split('.')[0] + args.output_pc_ext.replace('.xyz', '.npy')
+            print('Saving centralized point cloud (binary):', path_centralized_ptcloud_bin)
+            np.save(path_centralized_ptcloud_bin, ptcloud_centralized_with_normals_array)
             # pcl.save(ptcloud_centralized, path_centralized_ptcloud, format=args.output_pc_ext.split('.')[1], binary=False)
 
             path_imgRGB_with_nose_landmark = img_path.replace(args.input_img_ext, args.input_img_ext.replace(args.input_img_ext, '_centralized_nosetip.jpg'))
