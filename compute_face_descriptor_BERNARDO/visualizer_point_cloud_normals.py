@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument("-sphere_radius", type=float, default=100,  help="Radius of a sphere for comparison")
     parser.add_argument("-coord_system_size", type=float, default=100,  help="Size of X, Y and Z axis")
     parser.add_argument("-filter_radius", type=float, default=0.0,  help="Radius of sphere to filter points")
-    parser.add_argument("-only_valid_points", type=str2bool, default=False,  help="True or False")
+    parser.add_argument("-only_valid_points", type=str2bool, default=True,  help="True or False")
     parser.add_argument("-centralize", type=str2bool, default=True,  help="True of False")
     
     return parser.parse_args()
