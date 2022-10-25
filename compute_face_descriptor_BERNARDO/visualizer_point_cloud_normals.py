@@ -8,6 +8,16 @@ import sys
 
 
 def parse_args():
+    def str2bool(v):
+        if isinstance(v, bool):
+            return v
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
+
     parser = argparse.ArgumentParser(
         description="Arguments for visualizing point cloud with normals",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -18,6 +28,9 @@ def parse_args():
     parser.add_argument("-sphere_radius", type=float, default=100,  help="Radius of a sphere for comparison")
     parser.add_argument("-coord_system_size", type=float, default=100,  help="Size of X, Y and Z axis")
     parser.add_argument("-filter_radius", type=float, default=0.0,  help="Radius of sphere to filter points")
+    parser.add_argument("-only_valid_points", type=str2bool, default=False,  help="True or False")
+    parser.add_argument("-centralize", type=str2bool, default=True,  help="True of False")
+    
     return parser.parse_args()
 
 
@@ -30,14 +43,16 @@ def generate_random_sphere_point_cloud(n_points=1000, radius=1.0):
     return sphere_cloud
 
 
-def load_point_cloud(path_point_cloud):
-    cloud, normals = pcl.load(path_point_cloud, only_valid_points=True)
+def load_point_cloud(path_point_cloud, only_valid_points, centralize):
+    cloud, normals = pcl.load(path_point_cloud, only_valid_points=only_valid_points)
     cloud = cloud.to_array()
     print('cloud.shape:', cloud.shape)
     print('load_point_cloud(): cloud =', cloud)
     # cloud -= np.array([0., 0., -100.], dtype=np.float32)
     # cloud /= 100
-    cloud = cloud - np.mean(cloud, 0)
+    if centralize:
+        cloud = cloud - np.mean(cloud, 0)
+
     cloud = pcl.PointCloud(cloud)
 
     if not normals is None:
@@ -161,7 +176,7 @@ def show_point_cloud_with_normals(args, cloud, normals):
 
 def main(args):
     print('Loading point cloud:', args.input_path, '...')
-    ptcloud, normals = load_point_cloud(args.input_path)
+    ptcloud, normals = load_point_cloud(args.input_path, args.only_valid_points, args.centralize)
 
     if args.filter_radius > 0:
         ptcloud = filter_points_by_radius(ptcloud, [0., 0., 0.], radius=args.filter_radius)
@@ -218,5 +233,5 @@ if __name__ == '__main__':
 
 
     args = parse_args()
-
+    
     main(args)
