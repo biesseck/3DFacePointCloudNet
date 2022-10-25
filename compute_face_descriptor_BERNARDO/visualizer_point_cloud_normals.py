@@ -22,10 +22,10 @@ def parse_args():
         description="Arguments for visualizing point cloud with normals",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("-normals_size", type=float, default=10,  help="Normals vectors size")
+    parser.add_argument("-normals_size", type=float, default=0,  help="Normals vectors size")
     parser.add_argument("-input_path", type=str, default='/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj',  help="Input file path")
     parser.add_argument("-points_size", type=int, default=3,  help="Size of points to show")
-    parser.add_argument("-sphere_radius", type=float, default=100,  help="Radius of a sphere for comparison")
+    parser.add_argument("-sphere_radius", type=float, default=0,  help="Radius of a sphere for comparison")
     parser.add_argument("-coord_system_size", type=float, default=100,  help="Size of X, Y and Z axis")
     parser.add_argument("-filter_radius", type=float, default=0.0,  help="Radius of sphere to filter points")
     parser.add_argument("-only_valid_points", type=str2bool, default=True,  help="True or False")
@@ -218,7 +218,7 @@ if __name__ == '__main__':
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d558.abs']
 
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562.abs.gz']
-        sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/04226d357.abs.gz']
 
         # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data/TrainData/400000000/000.bc']
         # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/3DFacePointCloudNet/Data/TrainData/400000005/000.bc']
@@ -230,6 +230,7 @@ if __name__ == '__main__':
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/03467517/1ae3b398cea3823b49c212147ab9c105.txt']
 
+        sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562_centralized-nosetip_with-normals_filter-radius=90.npy']
 
 
     args = parse_args()
