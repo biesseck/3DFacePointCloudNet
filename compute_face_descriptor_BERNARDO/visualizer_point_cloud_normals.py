@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument("-sphere_radius", type=float, default=0,  help="Radius of a sphere for comparison")
     parser.add_argument("-coord_system_size", type=float, default=100,  help="Size of X, Y and Z axis")
     parser.add_argument("-filter_radius", type=float, default=0.0,  help="Radius of sphere to filter points")
+    parser.add_argument("-filter_index", type=int, default=0,  help="Indexes of points to crop out")
     parser.add_argument("-only_valid_points", type=str2bool, default=True,  help="True or False")
     parser.add_argument("-centralize", type=str2bool, default=True,  help="True of False")
     
@@ -43,23 +44,29 @@ def generate_random_sphere_point_cloud(n_points=1000, radius=1.0):
     return sphere_cloud
 
 
-def load_point_cloud(path_point_cloud, only_valid_points, centralize):
+def load_point_cloud(path_point_cloud, only_valid_points, centralize, filter_index):
     cloud, normals = pcl.load(path_point_cloud, only_valid_points=only_valid_points)
     cloud = cloud.to_array()
-    print('cloud.shape:', cloud.shape)
     print('load_point_cloud(): cloud =', cloud)
+    print('original cloud.shape:', cloud.shape)
     # cloud -= np.array([0., 0., -100.], dtype=np.float32)
     # cloud /= 100
     if centralize:
         cloud = cloud - np.mean(cloud, 0)
 
-    cloud = pcl.PointCloud(cloud)
-
     if not normals is None:
         # normals = np.asarray(normals)
         normals = normals.to_array()
+        if filter_index > 0 and filter_index < normals.shape[0]:
+            normals = normals[0:filter_index,:]
+
         normals = pcl.PointCloud_Normal(normals)
     
+    if filter_index > 0 and filter_index < cloud.shape[0]:
+        cloud = cloud[0:filter_index,:]
+        print('filtered index cloud.shape:', cloud.shape)
+    cloud = pcl.PointCloud(cloud)
+
     # ptcloud_centred = pcl.PointCloud_PointXYZRGB()
     return cloud, normals
 
@@ -176,10 +183,11 @@ def show_point_cloud_with_normals(args, cloud, normals):
 
 def main(args):
     print('Loading point cloud:', args.input_path, '...')
-    ptcloud, normals = load_point_cloud(args.input_path, args.only_valid_points, args.centralize)
+    ptcloud, normals = load_point_cloud(args.input_path, args.only_valid_points, args.centralize, args.filter_index)
 
     if args.filter_radius > 0:
         ptcloud = filter_points_by_radius(ptcloud, [0., 0., 0.], radius=args.filter_radius)
+        print('filtered radius ptcloud.size:', str((ptcloud.size,3)))
     
     if args.normals_size > 0:
         if normals is None:
@@ -210,7 +218,7 @@ def main(args):
 if __name__ == '__main__':
 
     if not '-input_path' in sys.argv:
-        # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj']
+        sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.obj']
         # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/lfw/Aaron_Eckhart/Aaron_Eckhart_0001/mesh.ply']
         # sys.argv += ['-input_path', '/home/bjgbiesseck/GitHub/Meta-PU_biesseck/model/new/result/output_TESTEcarell/mesh.xyz']
 
@@ -230,7 +238,7 @@ if __name__ == '__main__':
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/02691156/1a04e3eab45ca15dd86060f189eb133.txt']
         # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/shapenetcore_partanno_segmentation_benchmark_v0_normal/03467517/1ae3b398cea3823b49c212147ab9c105.txt']
 
-        sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562_centralized-nosetip_with-normals_filter-radius=90.npy']
+        # sys.argv += ['-input_path', '/home/bjgbiesseck/datasets/FRGCv2.0/FRGC-2.0-dist/nd1/Fall2003range/02463d562_centralized-nosetip_with-normals_filter-radius=90.npy']
 
 
     args = parse_args()
