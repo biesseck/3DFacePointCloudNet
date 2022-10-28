@@ -193,12 +193,13 @@ def main_centralize_nosetip_with_normals(args):
         ptcloud_centralized = filter_pointcloud_by_radius_from_origin(ptcloud_centralized, [0., 0., 0.], sphere_radius=args.filter_radius)
         print('ptcloud_centralized.to_array().shape:', ptcloud_centralized.to_array().shape)
         # show_point_cloud(ptcloud_centralized)
+        # sys.exit(0)
 
         normals_and_curvatures = get_normals_and_curvatures(ptcloud_centralized, k_neighbours=30)
         ptcloud_centralized_with_normals_array = np.hstack((ptcloud_centralized.to_array(), normals_and_curvatures.to_array()))
         # print('ptcloud_centralized_with_normals:', ptcloud_centralized_with_normals.shape)
         # print('ptcloud_centralized_with_normals[1000:1100]:', ptcloud_centralized_with_normals[1000:1100])
-        
+
         path_centralized_ptcloud_bin = '/'.join(pc_path.split('/')[:-1]) + '/' + pc_path.split('/')[-1].split('.')[0] + args.output_pc_ext
         print('Saving centralized point cloud with normals (binary):', path_centralized_ptcloud_bin)
         np.save(path_centralized_ptcloud_bin, ptcloud_centralized_with_normals_array)
@@ -226,11 +227,14 @@ if __name__ == '__main__':
     sys.argv += ['-filter_radius', '100']
 
     # sys.argv += ['-input_pc_ext', '.obj']
-    sys.argv += ['-input_pc_ext', '.ply']
+    # sys.argv += ['-input_pc_ext', '.ply']
+    sys.argv += ['-input_pc_ext', '_upsample_MetaPU.xyz']
+
     sys.argv += ['-input_kp_ext', 'kpt68.npy']
 
     # sys.argv += ['-output_pc_ext', '_centralized_nosetip.ply']
-    sys.argv += ['-output_pc_ext', '_centralized-nosetip_with-normals_filter-radius=100.npy']
+    # sys.argv += ['-output_pc_ext', '_centralized-nosetip_with-normals_filter-radius=100.npy']
+    sys.argv += ['-output_pc_ext', '_upsample_MetaPU_centralized-nosetip_with-normals_filter-radius=100.npy']
 
     args = parse_args()
     # print('__main__(): args=', args)
