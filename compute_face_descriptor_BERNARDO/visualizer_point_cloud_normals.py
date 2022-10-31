@@ -155,7 +155,8 @@ def filter_points_by_radius(cloud, keypoint_ref, radius=90.0):
 
 def init_pcl_viewer(args):
     viewer = pcl.pcl_visualization.PCLVisualizering()
-    viewer.SetBackgroundColor(0, 0, 0)
+    # viewer.SetBackgroundColor(0, 0, 0)
+    viewer.SetBackgroundColor(255, 255, 255)
     
     if args.coord_system_size > 0:
         viewer.AddCoordinateSystem(args.coord_system_size)
@@ -174,7 +175,8 @@ def show_point_cloud(args, cloud):
     viewer = init_pcl_viewer(args)
 
     # add point cloud
-    pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 255, 0, 0)
+    # pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 255, 0, 0)
+    pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 50, 50, 50)
     viewer.AddPointCloud_ColorHandler(cloud, pccolor1, b'cloud', 0)
     viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 3, b'cloud')
 
@@ -186,7 +188,8 @@ def show_point_cloud_with_normals(args, cloud, normals):
     viewer = init_pcl_viewer(args)
     
     # add point cloud
-    pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 255, 0, 0)
+    # pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 255, 0, 0)
+    pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 50, 50, 50)
     viewer.AddPointCloud_ColorHandler(cloud, pccolor1, b'cloud', 0)
     viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 3, b'cloud')
 
