@@ -178,7 +178,7 @@ def show_point_cloud(args, cloud):
     # pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 255, 0, 0)
     pccolor1 = pcl.pcl_visualization.PointCloudColorHandleringCustom(cloud, 50, 50, 50)
     viewer.AddPointCloud_ColorHandler(cloud, pccolor1, b'cloud', 0)
-    viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, 3, b'cloud')
+    viewer.SetPointCloudRenderingProperties(pcl.pcl_visualization.PCLVISUALIZER_POINT_SIZE, args.points_size, b'cloud')
 
     viewer.Spin()
 
