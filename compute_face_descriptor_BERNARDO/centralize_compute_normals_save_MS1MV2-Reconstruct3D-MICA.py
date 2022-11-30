@@ -225,7 +225,8 @@ def main_centralize_nosetip_with_normals(args):
 if __name__ == '__main__':
 
     if not '-dataset_path' in sys.argv:
-        sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/MS-Celeb-1M/ms1m-retinaface-t1/images']
+        # sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/MS-Celeb-1M/ms1m-retinaface-t1/images']
+        sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/MS-Celeb-1M/ms1m-retinaface-t1/images_reduced']
 
     sys.argv += ['-dir_level', '2']
 
