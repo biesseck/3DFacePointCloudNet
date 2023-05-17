@@ -1,11 +1,11 @@
 import sys
-import os
+import os, time
 import numpy as np
 import argparse
 from pathlib import Path
 from glob import glob
 
-os.environ["CUDA_VISIBLE_DEVICES"]='-1'   # cpu
+# os.environ["CUDA_VISIBLE_DEVICES"]='-1'   # cpu
 # os.environ["CUDA_VISIBLE_DEVICES"]='0'  # gpu
 # os.environ["CUDA_VISIBLE_DEVICES"]='1'  # gpu
 
@@ -21,7 +21,7 @@ def parse_args():
         description="Arguments for cls training",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("-dataset_path", type=str, default='/home/bjgbiesseck/GitHub/MICA/demo/output/MS-Celeb-1M/ms1m-retinaface-t1/images', help='')
+    parser.add_argument("-dataset_path", type=str, default='/home/bjgbiesseck/GitHub/BOVIFOCR_MICA_3Dreconstruction/demo/output/MS-Celeb-1M_3D_reconstruction_originalMICA/ms1m-retinaface-t1/images', help='')
     parser.add_argument('-dir_level', type=int, default=2, help='Subdirs level to search files')
     parser.add_argument('-input_pc_ext', type=str, default='.ply', help='')
     parser.add_argument('-input_kp_ext', type=str, default='kpt68.npy', help='')
@@ -45,14 +45,16 @@ class TreeMS1MV2_3DReconstructedMICA:
         all_kp_paths = []
         # print('all_sub_folders:', all_sub_folders)
         # print('len(all_sub_folders):', len(all_sub_folders))
-        for sub_folder_pointcloud in all_sub_folders:
+        for i, sub_folder_pointcloud in enumerate(all_sub_folders):
             pc_paths = sorted(glob(sub_folder_pointcloud + '/*' + pc_ext))
             kp_paths = sorted(glob(sub_folder_pointcloud + '/*' + kp_ext))
-            # print('pc_paths:', pc_paths)
-            # print('kp_paths:', kp_paths)
-            # print('----------------------')
+            print(f'get_all_pointclouds_paths - {i}/{len(all_sub_folders)-1} - pc_paths:', pc_paths)
+            print(f'get_all_pointclouds_paths - {i}/{len(all_sub_folders)-1} - kp_paths:', kp_paths)
+            print('----------------------')
             # input('PAUSED')
-            assert len(pc_paths) > 0 and len(kp_paths) > 0 and len(pc_paths) == len(kp_paths)
+            assert len(pc_paths) > 0
+            assert len(kp_paths) > 0
+            assert len(pc_paths) == len(kp_paths)
             all_pc_paths += pc_paths
             all_kp_paths += kp_paths
         
@@ -177,17 +179,27 @@ def filter_pointcloud_by_radius_from_origin(cloud, keypoint_ref, sphere_radius=9
 
 def main_centralize_nosetip_with_normals(args):
     print('Searching point cloud files in \'' + args.dataset_path + '\'... ')
+    start_time = time.time()
     pc_paths, kp_paths = TreeMS1MV2_3DReconstructedMICA().get_all_pointclouds_paths(args.dataset_path, args.dir_level, args.input_pc_ext, args.input_kp_ext)
+    searching_paths_time = time.time() - start_time
 
     start_index = find_index_of_file_name(pc_paths, args.start_from)
     # start_index = find_index_of_file_name(kp_paths, args.start_from)
 
+    # print('start_index:', start_index, '    len(pc_paths):', len(pc_paths))
+    # sys.exit(0)
+
+    # total_time = 0.0
+    total_time = searching_paths_time
+
     for i in range(start_index, len(pc_paths)):
+        start_time = time.time()
+
         pc_path = pc_paths[i]
         kp_path = kp_paths[i]
 
-        print(str(i) + '/' + str(len(pc_paths)) + ' - pc_path:', pc_path)
-        print(str(i) + '/' + str(len(kp_paths)) + ' - kp_path:', kp_path)
+        print(str(i) + '/' + str(len(pc_paths)-1) + ' - pc_path:', pc_path)
+        print(str(i) + '/' + str(len(kp_paths)-1) + ' - kp_path:', kp_path)
 
         ptcloud, _ = load_point_cloud(pc_path)
         kpt68 = load_keypoints(kp_path)
@@ -217,7 +229,13 @@ def main_centralize_nosetip_with_normals(args):
         # print('kpt68:', kpt68)
         # print('kpt68.shape:', kpt68.shape)
         # sys.exit(0)
+        spent_time = time.time() - start_time
+        total_time += spent_time
+        print(f'searching_paths_time: {searching_paths_time/3600.0}h  -  Crop time: {spent_time}s  -  total_time: {total_time}s,  {total_time/60.0}m,  {total_time/3600.0}h')
         print('---------------------------')
+
+        
+
 
 
 
@@ -225,8 +243,8 @@ def main_centralize_nosetip_with_normals(args):
 if __name__ == '__main__':
 
     if not '-dataset_path' in sys.argv:
-        # sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/MS-Celeb-1M/ms1m-retinaface-t1/images']
-        sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/MICA/demo/output/MS-Celeb-1M/ms1m-retinaface-t1/images_reduced']
+        sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/BOVIFOCR_MICA_3Dreconstruction/demo/output/MS-Celeb-1M_3D_reconstruction_originalMICA/ms1m-retinaface-t1/images']
+        # sys.argv += ['-dataset_path', '/home/bjgbiesseck/GitHub/BOVIFOCR_MICA_3Dreconstruction/demo/output/MS-Celeb-1M_3D_reconstruction_originalMICA/ms1m-retinaface-t1/images_reduced']
 
     sys.argv += ['-dir_level', '2']
 
