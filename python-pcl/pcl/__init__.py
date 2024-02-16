@@ -183,15 +183,19 @@ def load_NPY(filename):
     print('nd_array_npy.shape:', nd_array_npy.shape)
     if len(nd_array_npy.shape) == 3:
         nd_array_npy = nd_array_npy[0]
+    cloud_array = nd_array_npy
+    normals = None
     if nd_array_npy.shape[1] == 7:
         cloud_array = nd_array_npy[:,0:3]
         normals_array = nd_array_npy[:, 3:]
+        normals = PointCloud_Normal(normals_array)
     if nd_array_npy.shape[1] == 6:
         cloud_array = nd_array_npy[:,0:3]
         normals_array = np.zeros(shape=(nd_array_npy.shape[0],4), dtype='float32')
         normals_array[:, :3] = nd_array_npy[:, 3:]
+        normals = PointCloud_Normal(normals_array)
     cloud = PointCloud(cloud_array)
-    normals = PointCloud_Normal(normals_array)
+    # normals = PointCloud_Normal(normals_array)
     return cloud, normals
 
 
